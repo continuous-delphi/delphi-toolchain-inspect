@@ -31,6 +31,8 @@ pwsh delphi-toolchain-inspect.ps1 -Resolve D7
 pwsh delphi-toolchain-inspect.ps1 -Resolve -Name D7
 pwsh delphi-toolchain-inspect.ps1 -Resolve "Delphi 11"
 pwsh delphi-toolchain-inspect.ps1 -Resolve D7 -Format json
+pwsh delphi-toolchain-inspect.ps1 -ListKnown
+pwsh delphi-toolchain-inspect.ps1 -ListKnown -Format json
 ```
 
 ## Philosophy
@@ -214,7 +216,7 @@ Error:
 ## Dataset
 
 Both implementations consume the canonical dataset from
-[cd-spec-delphi-compiler-versions](https://github.com/continuous-delphi/cd-spec-delphi-compiler-versions).
+[delphi-compiler-versions](https://github.com/continuous-delphi/delphi-compiler-versions).
 The JSON dataset is the single source of truth. Version tables should not be duplicated in code.
 
 During development, the dataset is referenced as a Git submodule. Clone with:

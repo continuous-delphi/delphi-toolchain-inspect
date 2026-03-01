@@ -249,7 +249,7 @@ cleaned up in `AfterAll`.
 
 ### Submodule initialization
 
-Two tests require the `cd-spec-delphi-compiler-versions` submodule to be
+Two tests require the `delphi-compiler-versions` submodule to be
 initialized: the filesystem existence test in `Resolve-DefaultDataFilePath`
 and the no-`-DataFile` context in the subprocess integration suite.  If
 either fails with "path does not exist", run:

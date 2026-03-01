@@ -14,7 +14,7 @@
 
   Contexts 1-4 supply -DataFile explicitly so they run without the submodule.
   Context 5 omits -DataFile to exercise the default path resolution branch;
-  it requires cd-spec-delphi-compiler-versions to be initialized
+  it requires delphi-compiler-versions to be initialized
   (git submodule update --init).
 
   Context 1 - No action switches + valid -DataFile:

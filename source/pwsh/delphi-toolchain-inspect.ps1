@@ -63,10 +63,10 @@ function Resolve-DefaultDataFilePath {
   $scriptDir = Split-Path -Parent $ScriptPath
 
   # Prefer the submodule layout:
-  #   ../cd-spec-delphi-compiler-versions/data/delphi-compiler-versions.json
+  #   ../delphi-compiler-versions/data/delphi-compiler-versions.json
   # Use Join-Path to remain path-separator-safe if invoked on non-Windows runners.
   $repoRoot    = Join-Path $scriptDir '..' '..'
-  $specRoot    = Join-Path $repoRoot 'submodules' 'cd-spec-delphi-compiler-versions'
+  $specRoot    = Join-Path $repoRoot 'submodules' 'delphi-compiler-versions'
   $dataDir     = Join-Path $specRoot 'data'
   $defaultPath = Join-Path $dataDir 'delphi-compiler-versions.json'
 

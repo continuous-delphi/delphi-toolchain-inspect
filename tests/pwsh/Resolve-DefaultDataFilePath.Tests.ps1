@@ -12,7 +12,7 @@
 
   Context 2 - Real repository layout:
     Verifies the resolved path exists on disk.
-    Requires cd-spec-delphi-compiler-versions to be present as a submodule.
+    Requires delphi-compiler-versions to be present as a submodule.
 #>
 
 # PESTER 5 SCOPING RULES - this file demonstrates the required pattern:
@@ -46,7 +46,7 @@ Describe 'Resolve-DefaultDataFilePath' {
 
     It 'returns a path containing the spec submodule directory name' {
       $result = Resolve-DefaultDataFilePath -ScriptPath $script:fakeScriptPath
-      $result | Should -Match ([regex]::Escape('cd-spec-delphi-compiler-versions'))
+      $result | Should -Match ([regex]::Escape('delphi-compiler-versions'))
     }
 
   }
@@ -56,7 +56,7 @@ Describe 'Resolve-DefaultDataFilePath' {
     It 'resolves to a path that exists on disk' {
       # Arrange
       # Use the actual script path so the traversal resolves against the real repo.
-      # Requires cd-spec-delphi-compiler-versions to be present as a submodule.
+      # Requires delphi-compiler-versions to be present as a submodule.
 
       # Act
       $result = Resolve-DefaultDataFilePath -ScriptPath $script:scriptUnderTest
