@@ -1,4 +1,4 @@
-# cd-ci-toolchain Tests
+# delphi-toolchain-inspect Tests
 
 ## Running the tests
 
@@ -104,7 +104,7 @@ then `aliases` array.  All comparisons are case-insensitive.
 - Text format, all fields populated: VER150 and VER370 entry lines present; VER150 line contains compilerVersion and productName values; total line count is exactly 2
 - `-Format json`, all fields populated: output is a single item that parses as valid JSON; ok is true; command is "listKnown"; result.schemaVersion, result.dataVersion, result.generatedUtcDate match dataset values; result.versions has 2 entries; first entry has verDefine, productName, regKeyRelativePath, aliases, and notes fields
 
-### cd-ci-toolchain.ps1 subprocess integration (86 tests)
+### delphi-toolchain-inspect.ps1 subprocess integration (86 tests)
 
 Invokes the script as a child process via `Invoke-ToolProcess`; validates exit
 codes, stdout, and stderr.  Covers the dispatch block that the dot-source guard
@@ -148,7 +148,7 @@ Every test file must begin with:
 #Requires -Modules @{ ModuleName='Pester'; ModuleVersion='5.7.0' }
 <#
 .SYNOPSIS
-  Tests for <FunctionName> in cd-ci-toolchain.ps1
+  Tests for <FunctionName> in delphi-toolchain-inspect.ps1
 
 .DESCRIPTION
   Covers: <brief description of what is tested>
@@ -195,7 +195,7 @@ variables lets all path logic stay in one place.
 Variables assigned in `BeforeAll` must use the `$script:` prefix to be
 visible inside `It` blocks within the same `Describe` or `Context`.
 
-### Dot-source guard in cd-ci-toolchain.ps1
+### Dot-source guard in delphi-toolchain-inspect.ps1
 
 The script under test contains a dot-source guard at the top:
 

@@ -1,13 +1,13 @@
-# cd-ci-toolchain Command Reference
+# delphi-toolchain-inspect Command Reference
 
 This document describes the command-line interface for
-`cd-ci-toolchain.ps1`.
+`delphi-toolchain-inspect.ps1`.
 
 ------------------------------------------------------------------------
 
 # Overview
 
-`cd-ci-toolchain` provides three primary actions:
+`delphi-toolchain-inspect` provides three primary actions:
 
 -   `-Version` --- Display tool and dataset metadata
 -   `-Resolve` --- Resolve a Delphi alias or VER### constant to
@@ -21,7 +21,7 @@ By default, invoking the script with **no switches** performs the
 
 # Usage
 
-    pwsh ./source/pwsh/cd-ci-toolchain.ps1 [action] [options]
+    pwsh ./source/pwsh/delphi-toolchain-inspect.ps1 [action] [options]
 
 ------------------------------------------------------------------------
 
@@ -33,15 +33,15 @@ Display tool version and dataset metadata.
 
 ### Examples
 
-    pwsh cd-ci-toolchain.ps1
-    pwsh cd-ci-toolchain.ps1 -Version
-    pwsh cd-ci-toolchain.ps1 -Version -Format json
+    pwsh delphi-toolchain-inspect.ps1
+    pwsh delphi-toolchain-inspect.ps1 -Version
+    pwsh delphi-toolchain-inspect.ps1 -Version -Format json
 
 ### Output (text format, default)
 
 Labels are left-padded to a fixed column width.
 
-    cd-ci-toolchain 0.1.0
+    delphi-toolchain-inspect 0.1.0
     dataVersion     0.1.0
     schemaVersion   1.0.0
     generated       2026-01-01
@@ -55,7 +55,7 @@ the `generated` line is omitted.
       "ok": true,
       "command": "version",
       "tool": {
-        "name": "cd-ci-toolchain",
+        "name": "delphi-toolchain-inspect",
         "impl": "pwsh",
         "version": "0.1.0"
       },
@@ -92,10 +92,10 @@ wins.
 
 ### Examples
 
-    pwsh cd-ci-toolchain.ps1 -Resolve D7
-    pwsh cd-ci-toolchain.ps1 -Resolve "Delphi 11"
-    pwsh cd-ci-toolchain.ps1 -Resolve -Name VER150
-    pwsh cd-ci-toolchain.ps1 -Resolve VER350 -Format json
+    pwsh delphi-toolchain-inspect.ps1 -Resolve D7
+    pwsh delphi-toolchain-inspect.ps1 -Resolve "Delphi 11"
+    pwsh delphi-toolchain-inspect.ps1 -Resolve -Name VER150
+    pwsh delphi-toolchain-inspect.ps1 -Resolve VER350 -Format json
 
 ### Output (text format, default)
 
@@ -119,7 +119,7 @@ being omitted.
       "ok": true,
       "command": "resolve",
       "tool": {
-        "name": "cd-ci-toolchain",
+        "name": "delphi-toolchain-inspect",
         "impl": "pwsh",
         "version": "0.1.0"
       },
@@ -141,9 +141,9 @@ List all known Delphi versions from the dataset.
 
 ### Examples
 
-    pwsh cd-ci-toolchain.ps1 -ListKnown
-    pwsh cd-ci-toolchain.ps1 -ListKnown -Format json
-    pwsh cd-ci-toolchain.ps1 -ListKnown -DataFile ./data/custom.json
+    pwsh delphi-toolchain-inspect.ps1 -ListKnown
+    pwsh delphi-toolchain-inspect.ps1 -ListKnown -Format json
+    pwsh delphi-toolchain-inspect.ps1 -ListKnown -DataFile ./data/custom.json
 
 ### Output (text format, default)
 
@@ -159,7 +159,7 @@ packageVersion (6), productName (trailing).
       "ok": true,
       "command": "listKnown",
       "tool": {
-        "name": "cd-ci-toolchain",
+        "name": "delphi-toolchain-inspect",
         "impl": "pwsh",
         "version": "0.1.0"
       },

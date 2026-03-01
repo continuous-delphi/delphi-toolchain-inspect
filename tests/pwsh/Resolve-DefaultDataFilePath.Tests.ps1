@@ -1,7 +1,7 @@
 #Requires -Modules @{ ModuleName='Pester'; ModuleVersion='5.7.0' }
 <#
 .SYNOPSIS
-  Tests for Resolve-DefaultDataFilePath in cd-ci-toolchain.ps1
+  Tests for Resolve-DefaultDataFilePath in delphi-toolchain-inspect.ps1
 
 .DESCRIPTION
   Covers: path construction from a given script location.
@@ -36,7 +36,7 @@ Describe 'Resolve-DefaultDataFilePath' {
 
     BeforeAll {
       $fakeRepo              = Join-Path ([System.IO.Path]::GetTempPath()) 'repo'
-      $script:fakeScriptPath = Join-Path $fakeRepo 'source' 'pwsh' 'cd-ci-toolchain.ps1'
+      $script:fakeScriptPath = Join-Path $fakeRepo 'source' 'pwsh' 'delphi-toolchain-inspect.ps1'
     }
 
     It 'returns a path ending with the canonical data file name' {

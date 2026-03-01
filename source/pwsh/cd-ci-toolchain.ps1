@@ -1,5 +1,5 @@
 <#
-cd-ci-toolchain.ps1
+delphi-toolchain-inspect.ps1
 
 Minimal V1:
 - Loads the Delphi compiler versions dataset JSON.
@@ -8,13 +8,13 @@ Minimal V1:
 ASCII-only.
 
 USAGE
-  pwsh ./source/cd-ci-toolchain.ps1
-  pwsh ./source/cd-ci-toolchain.ps1 -Version
-  pwsh ./source/cd-ci-toolchain.ps1 -Version -Format json
-  pwsh ./source/cd-ci-toolchain.ps1 -Resolve -Name <alias>
-  pwsh ./source/cd-ci-toolchain.ps1 -Resolve <alias>
-  pwsh ./source/cd-ci-toolchain.ps1 -Resolve -Name <alias> -Format json
-  pwsh ./source/cd-ci-toolchain.ps1 -DataFile <path>
+  pwsh ./source/delphi-toolchain-inspect.ps1
+  pwsh ./source/delphi-toolchain-inspect.ps1 -Version
+  pwsh ./source/delphi-toolchain-inspect.ps1 -Version -Format json
+  pwsh ./source/delphi-toolchain-inspect.ps1 -Resolve -Name <alias>
+  pwsh ./source/delphi-toolchain-inspect.ps1 -Resolve <alias>
+  pwsh ./source/delphi-toolchain-inspect.ps1 -Resolve -Name <alias> -Format json
+  pwsh ./source/delphi-toolchain-inspect.ps1 -DataFile <path>
 
 NOTES
   Default behavior is equivalent to -Version.
@@ -109,7 +109,7 @@ function Write-JsonError {
   Write-JsonOutput ([pscustomobject]@{
     ok      = $false
     command = $Command
-    tool    = [pscustomobject]@{ name = 'cd-ci-toolchain'; impl = 'pwsh'; version = $ToolVersion }
+    tool    = [pscustomobject]@{ name = 'delphi-toolchain-inspect'; impl = 'pwsh'; version = $ToolVersion }
     error   = [pscustomobject]@{ code = $Code; message = $Message }
   } )
 }
@@ -134,7 +134,7 @@ function Write-VersionInfo {
     Write-JsonOutput ([pscustomobject]@{
       ok      = $true
       command = 'version'
-      tool    = [pscustomobject]@{ name = 'cd-ci-toolchain'; impl = 'pwsh'; version = $ToolVersion }
+      tool    = [pscustomobject]@{ name = 'delphi-toolchain-inspect'; impl = 'pwsh'; version = $ToolVersion }
       result  = [pscustomobject]@{
         schemaVersion      = $schemaVersion
         dataVersion        = $dataVersion
@@ -144,7 +144,7 @@ function Write-VersionInfo {
     return
   }
 
-  Write-Output ("cd-ci-toolchain {0}" -f $ToolVersion)
+  Write-Output ("delphi-toolchain-inspect {0}" -f $ToolVersion)
   Write-Output ("dataVersion     {0}" -f $dataVersion)
   Write-Output ("schemaVersion   {0}" -f $schemaVersion)
   if (-not [string]::IsNullOrWhiteSpace($generated)) {
@@ -192,7 +192,7 @@ function Write-ResolveOutput {
     Write-JsonOutput ([pscustomobject]@{
       ok      = $true
       command = 'resolve'
-      tool    = [pscustomobject]@{ name = 'cd-ci-toolchain'; impl = 'pwsh'; version = $ToolVersion }
+      tool    = [pscustomobject]@{ name = 'delphi-toolchain-inspect'; impl = 'pwsh'; version = $ToolVersion }
       result  = [pscustomobject]@{
         verDefine          = $Entry.verDefine
         productName        = $Entry.productName
@@ -242,7 +242,7 @@ function Write-ListKnownOutput {
     Write-JsonOutput ([pscustomobject]@{
       ok      = $true
       command = 'listKnown'
-      tool    = [pscustomobject]@{ name = 'cd-ci-toolchain'; impl = 'pwsh'; version = $ToolVersion }
+      tool    = [pscustomobject]@{ name = 'delphi-toolchain-inspect'; impl = 'pwsh'; version = $ToolVersion }
       result  = [pscustomobject]@{
         schemaVersion    = $Data.schemaVersion
         dataVersion      = $Data.dataVersion

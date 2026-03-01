@@ -1,7 +1,7 @@
-# cd-ci-toolchain
+# delphi-toolchain-inspect
 
 ![Status](https://img.shields.io/badge/status-incubator-orange)
-![License](https://img.shields.io/github/license/continuous-delphi/cd-ci-toolchain)
+![License](https://img.shields.io/github/license/continuous-delphi/delphi-toolchain-inspect)
 ![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![Delphi](https://img.shields.io/badge/delphi-red)
 ![PowerShell](https://img.shields.io/badge/powershell-7.4%2B-blue)
@@ -25,12 +25,12 @@ first-class deliverables.
 Curently, these work.  More options being built
 
 ```powershell
-pwsh cd-ci-toolchain.ps1
-pwsh cd-ci-toolchain.ps1 -Version
-pwsh cd-ci-toolchain.ps1 -Resolve D7
-pwsh cd-ci-toolchain.ps1 -Resolve -Name D7
-pwsh cd-ci-toolchain.ps1 -Resolve "Delphi 11"
-pwsh cd-ci-toolchain.ps1 -Resolve D7 -Format json
+pwsh delphi-toolchain-inspect.ps1
+pwsh delphi-toolchain-inspect.ps1 -Version
+pwsh delphi-toolchain-inspect.ps1 -Resolve D7
+pwsh delphi-toolchain-inspect.ps1 -Resolve -Name D7
+pwsh delphi-toolchain-inspect.ps1 -Resolve "Delphi 11"
+pwsh delphi-toolchain-inspect.ps1 -Resolve D7 -Format json
 ```
 
 ## Philosophy
@@ -156,7 +156,7 @@ Success (`-Version`):
   "ok": true,
   "command": "version",
   "tool": {
-    "name": "cd-ci-toolchain",
+    "name": "delphi-toolchain-inspect",
     "impl": "pwsh|delphi",
     "version": "X.Y.Z"
   },
@@ -175,7 +175,7 @@ Success (`-Resolve`):
   "ok": true,
   "command": "resolve",
   "tool": {
-    "name": "cd-ci-toolchain",
+    "name": "delphi-toolchain-inspect",
     "impl": "pwsh|delphi",
     "version": "X.Y.Z"
   },
@@ -200,7 +200,7 @@ Error:
   "ok": false,
   "command": "version",
   "tool": {
-    "name": "cd-ci-toolchain",
+    "name": "delphi-toolchain-inspect",
     "impl": "pwsh|delphi",
     "version": "X.Y.Z"
   },
@@ -220,7 +220,7 @@ The JSON dataset is the single source of truth. Version tables should not be dup
 During development, the dataset is referenced as a Git submodule. Clone with:
 
 ```
-git clone --recurse-submodules https://github.com/continuous-delphi/cd-ci-toolchain
+git clone --recurse-submodules https://github.com/continuous-delphi/delphi-toolchain-inspect
 ```
 
 The `gen/` folder produces a standalone `pwsh` script with the dataset embedded as a

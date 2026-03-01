@@ -1,7 +1,7 @@
 #Requires -Modules @{ ModuleName='Pester'; ModuleVersion='5.7.0' }
 <#
 .SYNOPSIS
-  Subprocess integration tests for cd-ci-toolchain.ps1
+  Subprocess integration tests for delphi-toolchain-inspect.ps1
 
 .DESCRIPTION
   Invokes the script as a child process via Invoke-ToolProcess and validates
@@ -96,7 +96,7 @@
     result.versions is non-empty.  Clean stderr.
 #>
 
-Describe 'cd-ci-toolchain.ps1 (subprocess)' {
+Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
   BeforeAll {
     . "$PSScriptRoot/TestHelpers.ps1"
@@ -104,7 +104,7 @@ Describe 'cd-ci-toolchain.ps1 (subprocess)' {
     $script:fixturePath        = Get-MinFixturePath
     $script:resolveFixturePath = Get-ResolveFixturePath
 
-    $script:badJsonPath = Join-Path ([System.IO.Path]::GetTempPath()) 'cd-ci-toolchain-integration-bad.json'
+    $script:badJsonPath = Join-Path ([System.IO.Path]::GetTempPath()) 'delphi-toolchain-inspect-integration-bad.json'
     Set-Content -LiteralPath $script:badJsonPath -Value '{ bad json' -Encoding UTF8NoBOM
   }
 
@@ -127,7 +127,7 @@ Describe 'cd-ci-toolchain.ps1 (subprocess)' {
 
     # Exact match: the first line is the canonical format contract for the tool header.
     It 'first stdout line is the tool header' {
-      $script:run.StdOut[0] | Should -Be 'cd-ci-toolchain 0.1.0'
+      $script:run.StdOut[0] | Should -Be 'delphi-toolchain-inspect 0.1.0'
     }
 
     It 'stdout includes a line with the dataVersion value' {
@@ -164,7 +164,7 @@ Describe 'cd-ci-toolchain.ps1 (subprocess)' {
     }
 
     It 'first stdout line is the tool header' {
-      $script:run.StdOut[0] | Should -Be 'cd-ci-toolchain 0.1.0'
+      $script:run.StdOut[0] | Should -Be 'delphi-toolchain-inspect 0.1.0'
     }
 
     It 'stdout includes a line with the dataVersion value' {
@@ -192,7 +192,7 @@ Describe 'cd-ci-toolchain.ps1 (subprocess)' {
   Context 'Given -DataFile pointing to a path that does not exist' {
 
     BeforeAll {
-      $missingPath = Join-Path ([System.IO.Path]::GetTempPath()) 'cd-ci-toolchain-integration-missing.json'
+      $missingPath = Join-Path ([System.IO.Path]::GetTempPath()) 'delphi-toolchain-inspect-integration-missing.json'
       $script:run  = Invoke-ToolProcess -ScriptPath $script:scriptPath `
                                         -Arguments @('-DataFile', $missingPath)
     }
@@ -246,7 +246,7 @@ Describe 'cd-ci-toolchain.ps1 (subprocess)' {
     }
 
     It 'first stdout line is the tool header' {
-      $script:run.StdOut[0] | Should -Be 'cd-ci-toolchain 0.1.0'
+      $script:run.StdOut[0] | Should -Be 'delphi-toolchain-inspect 0.1.0'
     }
 
     It 'stdout has exactly four lines' {
@@ -503,7 +503,7 @@ Describe 'cd-ci-toolchain.ps1 (subprocess)' {
   Context 'Given -DataFile pointing to a missing path -Format json' {
 
     BeforeAll {
-      $missingPath = Join-Path ([System.IO.Path]::GetTempPath()) 'cd-ci-toolchain-integration-missing-json.json'
+      $missingPath = Join-Path ([System.IO.Path]::GetTempPath()) 'delphi-toolchain-inspect-integration-missing-json.json'
       $script:run  = Invoke-ToolProcess -ScriptPath $script:scriptPath `
                                         -Arguments @('-Format', 'json', '-DataFile', $missingPath)
       $script:json = ($script:run.StdOut -join "`n") | ConvertFrom-Json

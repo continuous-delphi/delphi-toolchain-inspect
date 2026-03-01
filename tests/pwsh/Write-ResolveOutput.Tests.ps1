@@ -1,7 +1,7 @@
 #Requires -Modules @{ ModuleName='Pester'; ModuleVersion='5.7.0' }
 <#
 .SYNOPSIS
-  Tests for Write-ResolveOutput in cd-ci-toolchain.ps1
+  Tests for Write-ResolveOutput in delphi-toolchain-inspect.ps1
 
 .DESCRIPTION
   Covers: output lines produced for various entry shapes.
