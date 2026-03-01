@@ -201,13 +201,14 @@ Describe 'Write-DetectInstalledOutput' {
         -ToolVersion $script:toolVersion
     }
 
-    It 'contains two header lines (one per entry)' {
+    It 'blank separator line is positioned between the two header lines' {
       # @() forces empty array -- Where-Object returns $null under StrictMode when no matches
-      @($script:out | Where-Object { $_ -match '^VER' }).Count | Should -Be 2
-    }
-
-    It 'contains at least one blank separator line' {
-      ($script:out -contains '') | Should -Be $true
+      $headerIdx = @(0..($script:out.Count - 1) | Where-Object { $script:out[$_] -match '^VER' })
+      $blankIdx  = @(0..($script:out.Count - 1) | Where-Object { $script:out[$_] -eq '' })
+      $headerIdx | Should -HaveCount 2
+      $blankIdx  | Should -Not -BeNullOrEmpty
+      $blankIdx[0] | Should -BeGreaterThan $headerIdx[0]
+      $blankIdx[0] | Should -BeLessThan    $headerIdx[1]
     }
 
   }
@@ -296,7 +297,8 @@ Describe 'Write-DetectInstalledOutput' {
       $script:json.result.buildSystem | Should -Be 'DCC'
     }
 
-    It 'result.installations has 3 entries' {
+    It 'result.installations has 3 entries (one per in-memory input)' {
+      # Count matches the 3 pscustomobjects passed to the function above.
       $script:json.result.installations | Should -HaveCount 3
     }
 

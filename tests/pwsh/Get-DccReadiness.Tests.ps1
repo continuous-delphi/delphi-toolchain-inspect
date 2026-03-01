@@ -204,6 +204,7 @@ Describe 'Get-DccReadiness' {
     }
 
     It 'checks dcc32.cfg for Win32' {
+      # Call inside the It so Pester 5 tracks it in this test's call history
       Get-DccReadiness -Entry $script:entryDccWin32 -Platform 'Win32' | Out-Null
       Should -Invoke Test-Path -ParameterFilter { $LiteralPath -match 'dcc32\.cfg' }
     }
@@ -223,11 +224,13 @@ Describe 'Get-DccReadiness' {
     }
 
     It 'checks dcc64.exe for Win64' {
+      # Call inside the It so Pester 5 tracks it in this test's call history
       Get-DccReadiness -Entry $script:entryBoth -Platform 'Win64' | Out-Null
       Should -Invoke Test-Path -ParameterFilter { $LiteralPath -match 'dcc64\.exe' }
     }
 
     It 'checks dcc64.cfg for Win64' {
+      # Call inside the It so Pester 5 tracks it in this test's call history
       Get-DccReadiness -Entry $script:entryBoth -Platform 'Win64' | Out-Null
       Should -Invoke Test-Path -ParameterFilter { $LiteralPath -match 'dcc64\.cfg' }
     }

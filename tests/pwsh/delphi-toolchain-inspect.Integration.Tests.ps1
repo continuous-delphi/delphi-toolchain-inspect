@@ -112,13 +112,22 @@
 
   Context 22 - -DetectInstalled -Platform Win32 -BuildSystem MSBuild -Format json:
     Exit 6, stdout parses as JSON, ok=true, command=detectInstalled,
-    result.buildSystem=MSBuild.  Clean stderr.
+    result.buildSystem=MSBuild, 3 installations.  VER150 (DCC-only) is
+    notApplicable/registryFound=null; VER999 (MSBuild/Win32) is
+    notFound/registryFound=false.  Clean stderr.
 
   Context 23 - -DetectInstalled without -Platform:
     Exit 1 (PowerShell parameter binding rejects the invocation), no stdout, stderr present.
 
   Context 24 - -DetectInstalled without -BuildSystem:
     Exit 1 (PowerShell parameter binding rejects the invocation), no stdout, stderr present.
+
+  Known gap -- exit 5 (registry access error) has no integration coverage.
+  Get-RegistryRootDir cannot be mocked across a subprocess boundary, so
+  injecting a registry failure would require a dedicated error-injection
+  wrapper or a custom test shim.  Exit 5 is covered by the inner try/catch
+  in the dispatch block; the relevant unit tests exercise the Get-DccReadiness
+  and Get-MSBuildReadiness error paths directly.
 #>
 
 Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
@@ -706,7 +715,9 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
       $script:json.result.buildSystem | Should -Be 'DCC'
     }
 
-    It 'JSON result.installations has 3 entries (one per dataset entry)' {
+    It 'JSON result.installations has 3 entries (one per detect fixture entry)' {
+      # Count is tied to delphi-compiler-versions.detect.json (3 entries).
+      # Update this assertion if the fixture grows.
       $script:json.result.installations | Should -HaveCount 3
     }
 
@@ -754,6 +765,29 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
     It 'JSON result.buildSystem is MSBuild' {
       $script:json.result.buildSystem | Should -Be 'MSBuild'
+    }
+
+    It 'JSON result.installations has 3 entries (one per detect fixture entry)' {
+      # Count is tied to delphi-compiler-versions.detect.json (3 entries).
+      # Update this assertion if the fixture grows.
+      $script:json.result.installations | Should -HaveCount 3
+    }
+
+    It 'VER150 (DCC-only) entry has readiness=notApplicable and registryFound=null' {
+      # MSBuild not in VER150.supportedBuildSystems -> notApplicable; registry never checked
+      # @() forces empty array -- Where-Object returns $null under StrictMode when no matches
+      $entry = @($script:json.result.installations | Where-Object { $_.verDefine -eq 'VER150' })[0]
+      $entry | Should -Not -BeNull
+      $entry.readiness     | Should -Be 'notApplicable'
+      $entry.registryFound | Should -BeNull
+    }
+
+    It 'VER999 (MSBuild/Win32) entry has readiness=notFound and registryFound=false' {
+      # MSBuild+Win32 supported; no Delphi installed on test machine -> notFound
+      $entry = @($script:json.result.installations | Where-Object { $_.verDefine -eq 'VER999' })[0]
+      $entry | Should -Not -BeNull
+      $entry.readiness     | Should -Be 'notFound'
+      $entry.registryFound | Should -Be $false
     }
 
     It 'produces no stderr' {
