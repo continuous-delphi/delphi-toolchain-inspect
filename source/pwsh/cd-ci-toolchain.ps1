@@ -124,7 +124,7 @@ function Write-VersionInfo {
   $schemaVersion = $Data.schemaVersion
   $dataVersion   = $Data.dataVersion
 
-  # generated date lives under meta.generated_utc_date in our dataset
+  # generated date lives under meta.generatedUtcDate in our dataset
   $generated = $null
   if ($null -ne $Data.meta -and $null -ne $Data.meta.generatedUtcDate) {
     $generated = $Data.meta.generatedUtcDate
