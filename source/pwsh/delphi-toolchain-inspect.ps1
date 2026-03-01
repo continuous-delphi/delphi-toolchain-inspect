@@ -498,7 +498,7 @@ function Write-DetectInstalledOutput {
     } else {
       Write-Output ("  {0,-26}{1}" -f 'rsvarsFound', $inst.rsvarsFound.ToString().ToLower())
       Write-Output ("  {0,-26}{1}" -f 'envOptionsFound', $inst.envOptionsFound.ToString().ToLower())
-      $hasLibStr = ($null -ne $inst.envOptionsHasLibraryPath) ? $inst.envOptionsHasLibraryPath.ToString().ToLower() : 'null'
+      $hasLibStr = if ($null -ne $inst.envOptionsHasLibraryPath) { $inst.envOptionsHasLibraryPath.ToString().ToLower() } else { 'null' }
       Write-Output ("  {0,-26}{1}" -f 'envOptionsHasLibraryPath', $hasLibStr)
     }
   }
