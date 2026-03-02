@@ -68,6 +68,15 @@ $ErrorActionPreference = 'Stop'
 # Tool version (bump per Continuous Delphi versioning policy for tooling)
 $ToolVersion = '0.1.0'
 
+# Exit code constants -- single source of truth for the exit code contract.
+$ExitSuccess              = 0   # normal completion
+$ExitUnexpectedError      = 1   # unhandled exception or PS binder failure
+$ExitInvalidArguments     = 2   # reserved; not currently used
+$ExitDatasetError         = 3   # data file missing or unparseable
+$ExitAliasNotFound        = 4   # -Resolve name not in dataset
+$ExitRegistryError        = 5   # -DetectInstalled registry access failure
+$ExitNoInstallationsFound = 6   # -DetectInstalled: no ready/partial entries
+
 function Resolve-DefaultDataFilePath {
   param([string]$ScriptPath)
 
@@ -535,35 +544,35 @@ try {
     $data = Import-JsonData -Path $DataFile
   } catch {
     if ($Format -eq 'json') {
-      Write-JsonError -ToolVersion $ToolVersion -Command $commandName -Code 3 -Message $_.Exception.Message
+      Write-JsonError -ToolVersion $ToolVersion -Command $commandName -Code $ExitDatasetError -Message $_.Exception.Message
     } else {
       Write-Error $_.Exception.Message -ErrorAction Continue
     }
-    exit 3
+    exit $ExitDatasetError
   }
 
   if ($doVersion) {
     Write-VersionInfo -ToolVersion $ToolVersion -Data $data -Format $Format
-    exit 0
+    exit $ExitSuccess
   }
 
   if ($Resolve) {
     $entry = Resolve-VersionEntry -Name $Name -Data $data
     if ($null -eq $entry) {
       if ($Format -eq 'json') {
-        Write-JsonError -ToolVersion $ToolVersion -Command 'resolve' -Code 4 -Message "Alias not found: $Name"
+        Write-JsonError -ToolVersion $ToolVersion -Command 'resolve' -Code $ExitAliasNotFound -Message "Alias not found: $Name"
       } else {
         Write-Error "Alias not found: $Name" -ErrorAction Continue
       }
-      exit 4
+      exit $ExitAliasNotFound
     }
     Write-ResolveOutput -Entry $entry -ToolVersion $ToolVersion -Format $Format
-    exit 0
+    exit $ExitSuccess
   }
 
   if ($ListKnown) {
     Write-ListKnownOutput -Data $data -ToolVersion $ToolVersion -Format $Format
-    exit 0
+    exit $ExitSuccess
   }
 
   if ($DetectInstalled) {
@@ -578,25 +587,25 @@ try {
       })
     } catch {
       if ($Format -eq 'json') {
-        Write-JsonError -ToolVersion $ToolVersion -Command 'detectInstalled' -Code 5 -Message "Registry access failed: $($_.Exception.Message)"
+        Write-JsonError -ToolVersion $ToolVersion -Command 'detectInstalled' -Code $ExitRegistryError -Message "Registry access failed: $($_.Exception.Message)"
       } else {
         Write-Error "Registry access failed: $($_.Exception.Message)" -ErrorAction Continue
       }
-      exit 5
+      exit $ExitRegistryError
     }
     # @() forces empty array -- Where-Object returns $null under StrictMode when no matches
     $anyFound = @($installations | Where-Object { $_.readiness -in @('ready', 'partialInstall') }).Count -gt 0
     Write-DetectInstalledOutput -Installations $installations -Platform $Platform -BuildSystem $BuildSystem -ToolVersion $ToolVersion -Format $Format
-    if (-not $anyFound) { exit 6 }
-    exit 0
+    if (-not $anyFound) { exit $ExitNoInstallationsFound }
+    exit $ExitSuccess
   }
 
-  exit 0
+  exit $ExitSuccess
 } catch {
   if ($Format -eq 'json') {
-    Write-JsonError -ToolVersion $ToolVersion -Command $commandName -Code 1 -Message $_.Exception.Message
+    Write-JsonError -ToolVersion $ToolVersion -Command $commandName -Code $ExitUnexpectedError -Message $_.Exception.Message
   } else {
     Write-Error $_.Exception.Message -ErrorAction Continue
   }
-  exit 1
+  exit $ExitUnexpectedError
 }

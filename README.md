@@ -22,8 +22,6 @@ first-class deliverables.
 
 ## TLDR;
 
-Currently, these work.  More options being built
-
 ```powershell
 pwsh delphi-toolchain-inspect.ps1
 pwsh delphi-toolchain-inspect.ps1 -Version
@@ -33,8 +31,9 @@ pwsh delphi-toolchain-inspect.ps1 -Resolve "Delphi 11"
 pwsh delphi-toolchain-inspect.ps1 -Resolve D7 -Format json
 pwsh delphi-toolchain-inspect.ps1 -ListKnown
 pwsh delphi-toolchain-inspect.ps1 -ListKnown -Format json
+pwsh delphi-toolchain-inspect.ps1 -DetectInstalled -Platform Win32 -BuildSystem DCC
+pwsh delphi-toolchain-inspect.ps1 -DetectInstalled -Platform Win32 -BuildSystem MSBuild -Format json
 ```
-todo: `-DetectInstalled`
 
 ## Philosophy
 
@@ -135,7 +134,9 @@ output formats, and any functionality differences between implementations.
 | `1`  | Unexpected error                                          |
 | `2`  | Invalid arguments                                         |
 | `3`  | Dataset missing or unreadable                             |
-| `4`  | No Delphi installations detected (DetectInstalled only)   |
+| `4`  | Alias not found (-Resolve only)                           |
+| `5`  | Registry access error (-DetectInstalled only)             |
+| `6`  | No installations found (-DetectInstalled only)            |
 
 Exit codes will match across implementations for equivalent commands.
 
