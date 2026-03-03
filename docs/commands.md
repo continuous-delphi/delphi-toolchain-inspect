@@ -197,7 +197,7 @@ readiness for a specific platform and build system combination.
 
 Both `-Platform` and `-BuildSystem` are mandatory.  The tool reports
 readiness for just the provided combination. To assess multiple build
-systems, invoke the command multiple times.
+systems or platforms, invoke the command multiple times.
 
 ### Syntax
 
@@ -236,7 +236,8 @@ Before performing any registry check, the tool consults the
 `supportedBuildSystems` and `supportedPlatforms` arrays in the dataset
 entry.  If the requested build system or platform is absent from the
 entry's arrays, the entry is assigned `readiness: notApplicable` and
-no registry access is attempted for that entry.
+no registry access is attempted for that entry. (For example, `MSBuild`
+is notApplicable for Delphi 3 and `Win64` is notApplicable for Delphi 7.)
 
 Detection is otherwise registry-based.  The tool scans the Windows
 registry under the following hive paths (HKCU checked before HKLM):
@@ -472,15 +473,15 @@ the versions present in that file.
 
 # Exit Codes
 
-  Code   Meaning
-  ------ -----------------------------------------------------------------
-  0      Success
-  1      PowerShell parameter binding error or unexpected internal error
-  2      Reserved (script-body argument validation; not currently used)
-  3      Dataset missing or unreadable
-  4      Alias not found (-Resolve only)
-  5      Registry access error (-DetectInstalled only)
-  6      No installations found (-DetectInstalled only)
+| Code | Meaning |
+|------|---------|
+| `0` | Success |
+| `1` | PowerShell parameter binding error or unexpected internal error |
+| `2` | Reserved (script-body argument validation; not currently used) |
+| `3` | Dataset missing or unreadable |
+| `4` | Alias not found (`-Resolve` only) |
+| `5` | Registry access error (`-DetectInstalled` only) |
+| `6` | No installations found (`-DetectInstalled` only) |
 
 ------------------------------------------------------------------------
 
@@ -489,6 +490,14 @@ the versions present in that file.
 ## Text format (default)
 
 -   On success: stdout contains output, stderr is empty.
+-   On parameter binding errors (exit 1): PowerShell emits its own
+    error text to stderr before the script body runs (unknown parameters,
+    missing mandatory parameters, conflicting parameter sets),
+    stdout is empty.
+-   On reserved/unused argument error (exit 2): not currently reachable;
+    reserved for future script-body argument validation. Behavior when
+    emitted will follow the same pattern as exit 3: stderr contains the
+    error message, stdout is empty.    
 -   On dataset errors (exit 3): stderr contains the error message,
     stdout is empty.
 -   On unknown alias (exit 4): stderr contains "Alias not found",
@@ -497,23 +506,22 @@ the versions present in that file.
     message, stdout is empty.
 -   On no installations found (exit 6): stdout contains
     "No installations found", stderr is empty.
--   On parameter binding errors (exit 1): PowerShell emits its own
-    error text to stderr, stdout is empty.
 
 ## JSON format (-Format json)
 
 -   On success: stdout contains the JSON success envelope, stderr is
     empty.
+-   On parameter binding errors (exit 1): PowerShell emits its own
+    error text to stderr before the script body runs; no JSON envelope
+    is produced.
+-   On reserved/unused argument error (exit 2): not currently reachable;
+-   On dataset errors (exit 3), unknown alias (exit 4), or registry
+    access error (exit 5): stdout contains a JSON error envelope,
+    stderr is empty.
 -   On no installations found (exit 6): stdout contains the normal
     JSON success envelope (ok: true) with all installations listed as
     notFound; stderr is empty.  Exit code 6 is the signal -- the
     envelope is still well-formed and machine-readable.
--   On dataset errors (exit 3), unknown alias (exit 4), or registry
-    access error (exit 5): stdout contains a JSON error envelope,
-    stderr is empty.
--   On parameter binding errors (exit 1): PowerShell emits its own
-    error text to stderr before the script body runs; no JSON envelope
-    is produced.
 
 JSON error envelope:
 
