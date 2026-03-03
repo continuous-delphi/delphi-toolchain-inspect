@@ -14,6 +14,11 @@
 
   Context 3 - Object with a null property:
     Null property is present in the output (not silently omitted).
+
+  Context 4 - Unexpected object shape (array):
+    An array passed directly produces a single compact JSON array string, not
+    multiple pipeline items.  Validates that Write-Output is not bypassed and
+    that the -Compress flag applies to non-object shapes.
 #>
 
 # PESTER 5 SCOPING RULES apply here -- see Resolve-DefaultDataFilePath.Tests.ps1
@@ -84,6 +89,31 @@ Describe 'Write-JsonOutput' {
 
     It 'parses back and the null property value is null' {
       ($script:result | ConvertFrom-Json).absent | Should -BeNull
+    }
+
+  }
+
+  Context 'Given an array (unexpected object shape)' {
+
+    BeforeAll {
+      $script:result = Write-JsonOutput @(1, 'two', $null)
+    }
+
+    It 'produces exactly one output item (not one item per element)' {
+      @($script:result) | Should -HaveCount 1
+    }
+
+    It 'output is a compact single-line JSON array string' {
+      $script:result | Should -BeOfType [string]
+      $script:result | Should -Not -Match "`n"
+    }
+
+    It 'parses back as an array with the correct elements' {
+      $parsed = $script:result | ConvertFrom-Json
+      @($parsed) | Should -HaveCount 3
+      $parsed[0] | Should -Be 1
+      $parsed[1] | Should -Be 'two'
+      $parsed[2] | Should -BeNull
     }
 
   }
