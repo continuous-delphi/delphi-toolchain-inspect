@@ -135,7 +135,6 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
   BeforeAll {
     . "$PSScriptRoot/TestHelpers.ps1"
     $script:scriptPath             = Get-ScriptUnderTestPath
-    . $script:scriptPath
     $script:fixturePath            = Get-MinFixturePath
     $script:resolveFixturePath     = Get-ResolveFixturePath
     $script:detectFixturePath      = Get-DetectFixturePath
@@ -164,7 +163,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 0' {
-      $script:run.ExitCode | Should -Be $ExitSuccess
+      $script:run.ExitCode | Should -Be 0
     }
 
     # Exact match: the first line is the canonical format contract for the tool header.
@@ -202,7 +201,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 0' {
-      $script:run.ExitCode | Should -Be $ExitSuccess
+      $script:run.ExitCode | Should -Be 0
     }
 
     It 'first stdout line is the tool header' {
@@ -240,7 +239,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 3' {
-      $script:run.ExitCode | Should -Be $ExitDatasetError
+      $script:run.ExitCode | Should -Be 3
     }
 
     It 'produces no stdout' {
@@ -262,7 +261,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 3' {
-      $script:run.ExitCode | Should -Be $ExitDatasetError
+      $script:run.ExitCode | Should -Be 3
     }
 
     It 'produces no stdout' {
@@ -284,7 +283,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 0' {
-      $script:run.ExitCode | Should -Be $ExitSuccess
+      $script:run.ExitCode | Should -Be 0
     }
 
     It 'first stdout line is the tool header' {
@@ -305,7 +304,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 0' {
-      $script:run.ExitCode | Should -Be $ExitSuccess
+      $script:run.ExitCode | Should -Be 0
     }
 
     It 'stdout includes a verDefine line with the canonical VER value' {
@@ -338,7 +337,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 0' {
-      $script:run.ExitCode | Should -Be $ExitSuccess
+      $script:run.ExitCode | Should -Be 0
     }
 
     It 'verDefine line resolves to the canonical VER150' {
@@ -355,7 +354,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 0' {
-      $script:run.ExitCode | Should -Be $ExitSuccess
+      $script:run.ExitCode | Should -Be 0
     }
 
     It 'verDefine line resolves to the canonical VER150' {
@@ -372,7 +371,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 0' {
-      $script:run.ExitCode | Should -Be $ExitSuccess
+      $script:run.ExitCode | Should -Be 0
     }
 
     It 'verDefine line resolves to the canonical VER150' {
@@ -389,7 +388,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 4' {
-      $script:run.ExitCode | Should -Be $ExitAliasNotFound
+      $script:run.ExitCode | Should -Be 4
     }
 
     It 'produces no stdout' {
@@ -411,7 +410,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 1 (PowerShell parameter binding failure)' {
-      $script:run.ExitCode | Should -Be $ExitUnexpectedError
+      $script:run.ExitCode | Should -Be 1
     }
 
     It 'produces no stdout' {
@@ -433,7 +432,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 1 (PowerShell parameter binding failure)' {
-      $script:run.ExitCode | Should -Be $ExitUnexpectedError
+      $script:run.ExitCode | Should -Be 1
     }
 
     It 'produces no stdout' {
@@ -455,7 +454,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 0' {
-      $script:run.ExitCode | Should -Be $ExitSuccess
+      $script:run.ExitCode | Should -Be 0
     }
 
     It 'stdout has exactly six lines' {
@@ -477,7 +476,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 0' {
-      $script:run.ExitCode | Should -Be $ExitSuccess
+      $script:run.ExitCode | Should -Be 0
     }
 
     It 'stdout parses as valid JSON' {
@@ -516,7 +515,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 0' {
-      $script:run.ExitCode | Should -Be $ExitSuccess
+      $script:run.ExitCode | Should -Be 0
     }
 
     It 'stdout parses as valid JSON' {
@@ -552,7 +551,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 3' {
-      $script:run.ExitCode | Should -Be $ExitDatasetError
+      $script:run.ExitCode | Should -Be 3
     }
 
     It 'stdout parses as valid JSON' {
@@ -564,7 +563,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'JSON error.code is 3' {
-      $script:json.error.code | Should -Be $ExitDatasetError
+      $script:json.error.code | Should -Be 3
     }
 
     It 'JSON error.message contains "Data file not found"' {
@@ -586,7 +585,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 4' {
-      $script:run.ExitCode | Should -Be $ExitAliasNotFound
+      $script:run.ExitCode | Should -Be 4
     }
 
     It 'stdout parses as valid JSON' {
@@ -598,7 +597,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'JSON error.code is 4' {
-      $script:json.error.code | Should -Be $ExitAliasNotFound
+      $script:json.error.code | Should -Be 4
     }
 
     It 'JSON error.message contains "Alias not found"' {
@@ -619,7 +618,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 0' {
-      $script:run.ExitCode | Should -Be $ExitSuccess
+      $script:run.ExitCode | Should -Be 0
     }
 
     It 'stdout has exactly one line per dataset entry' {
@@ -645,7 +644,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 0' {
-      $script:run.ExitCode | Should -Be $ExitSuccess
+      $script:run.ExitCode | Should -Be 0
     }
 
     It 'stdout parses as valid JSON' {
@@ -675,7 +674,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 6 (no installations found)' {
-      $script:run.ExitCode | Should -Be $ExitNoInstallationsFound
+      $script:run.ExitCode | Should -Be 6
     }
 
     It 'stdout has exactly one line' {
@@ -702,7 +701,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 6' {
-      $script:run.ExitCode | Should -Be $ExitNoInstallationsFound
+      $script:run.ExitCode | Should -Be 6
     }
 
     It 'stdout parses as valid JSON' {
@@ -756,7 +755,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 6' {
-      $script:run.ExitCode | Should -Be $ExitNoInstallationsFound
+      $script:run.ExitCode | Should -Be 6
     }
 
     It 'stdout parses as valid JSON' {
@@ -807,7 +806,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 1 (PowerShell parameter binding failure)' {
-      $script:run.ExitCode | Should -Be $ExitUnexpectedError
+      $script:run.ExitCode | Should -Be 1
     }
 
     It 'produces no stdout' {
@@ -828,7 +827,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 1 (PowerShell parameter binding failure)' {
-      $script:run.ExitCode | Should -Be $ExitUnexpectedError
+      $script:run.ExitCode | Should -Be 1
     }
 
     It 'produces no stdout' {
@@ -849,7 +848,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 1 (PowerShell parameter binding failure)' {
-      $script:run.ExitCode | Should -Be $ExitUnexpectedError
+      $script:run.ExitCode | Should -Be 1
     }
 
     It 'produces no stdout' {
@@ -870,7 +869,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 5 (registry error)' {
-      $script:run.ExitCode | Should -Be $ExitRegistryError
+      $script:run.ExitCode | Should -Be 5
     }
 
     It 'produces no stdout' {
@@ -893,7 +892,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'exits with code 5 (registry error)' {
-      $script:run.ExitCode | Should -Be $ExitRegistryError
+      $script:run.ExitCode | Should -Be 5
     }
 
     It 'stdout parses as valid JSON' {
@@ -905,7 +904,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     }
 
     It 'JSON error.code is 5' {
-      $script:json.error.code | Should -Be $ExitRegistryError
+      $script:json.error.code | Should -Be 5
     }
 
     It 'JSON error.message contains "Registry access failed"' {
