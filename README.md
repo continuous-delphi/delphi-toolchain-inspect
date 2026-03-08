@@ -124,27 +124,7 @@ This is the recognized PowerShell standard and is adopted for both implementatio
 ensure identical parameter syntax.
 
 See [docs/commands.md](docs/commands.md) for full command reference including switches,
-output formats, and any functionality differences between implementations.
-
-### Exit codes
-
-| Code | Meaning                                                   |
-|------|-----------------------------------------------------------|
-| `0`  | Success                                                   |
-| `1`  | Unexpected error                                          |
-| `2`  | Invalid arguments                                         |
-| `3`  | Dataset missing or unreadable                             |
-| `4`  | Alias not found (-Resolve only)                           |
-| `5`  | Registry access error (-DetectInstalled only)             |
-| `6`  | No installations found (-DetectInstalled only)            |
-
-Exit codes will match across implementations for equivalent commands.
-
-**PowerShell implementation note:** the PowerShell binder runs before the
-script body, so parameter binding failures (missing mandatory parameter,
-conflicting parameter set) also produce exit 1.  They are distinguishable
-from script-body errors only by the stderr message.  Exit 2 is reserved for
-invalid-argument conditions detected inside the script body.
+output formats, exit codes, and any functionality differences between implementations.
 
 ### Machine output contract
 
@@ -220,12 +200,7 @@ Error:
 Both implementations consume the canonical dataset from
 [delphi-compiler-versions](https://github.com/continuous-delphi/delphi-compiler-versions).
 The JSON dataset is the single source of truth. Version tables should not be duplicated in code.
-
-During development, the dataset is referenced as a Git submodule. Clone with:
-
-```
-git clone --recurse-submodules https://github.com/continuous-delphi/delphi-toolchain-inspect
-```
+During development, the dataset is referenced as a Git submodule.
 
 The `gen/` folder produces a standalone `pwsh` script with the dataset embedded as a
 PowerShell `here-string`. (The Delphi executable references the dataset directly as a project
@@ -233,7 +208,7 @@ resource.)
 
 Both standalone artifacts support the same three-tier dataset resolution priority. Placing
 a newer `delphi-compiler-versions.json` alongside either artifact will take precedence over
-the embedded data without regenerating or recompiling.  
+the embedded data without regenerating or recompiling.
 
 
 ## Maturity

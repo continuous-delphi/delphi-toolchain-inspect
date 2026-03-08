@@ -233,7 +233,7 @@ systems or platforms, invoke the command multiple times.
 
 Valid values: `Win32`, `Win64`
 
-The target compilation platform to assess. 
+The target compilation platform to assess.
 
 `-BuildSystem` (mandatory)
 
@@ -507,6 +507,13 @@ the versions present in that file.
 | `5` | Registry access error (`-DetectInstalled` only) |
 | `6` | No installations found (`-DetectInstalled` only) |
 
+
+**PowerShell implementation note:** the PowerShell binder runs before the
+script body, so parameter binding failures (missing mandatory parameter,
+conflicting parameter set) also produce exit 1.  They are distinguishable
+from script-body errors only by the stderr message.  Exit 2 is reserved for
+invalid-argument conditions detected inside the script body.
+
 ------------------------------------------------------------------------
 
 # Error Behavior
@@ -521,7 +528,7 @@ the versions present in that file.
 -   On reserved/unused argument error (exit 2): not currently reachable;
     reserved for future script-body argument validation. Behavior when
     emitted will follow the same pattern as exit 3: stderr contains the
-    error message, stdout is empty.    
+    error message, stdout is empty.
 -   On dataset errors (exit 3): stderr contains the error message,
     stdout is empty.
 -   On unknown alias (exit 4): stderr contains "Alias not found",
