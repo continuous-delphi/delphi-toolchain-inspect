@@ -58,6 +58,7 @@ Describe 'Write-DetectLatestOutput' {
       readiness                = 'ready'
       registryFound            = $true
       rootDir                  = 'C:\Fake\Delphi13'
+      rsvarsPath               = 'C:\Fake\Delphi13\bin\rsvars.bat'
       rootDirExists            = $true
       rsvarsFound              = $true
       envOptionsFound          = $true
@@ -142,6 +143,10 @@ Describe 'Write-DetectLatestOutput' {
 
     It 'first line contains verDefine and productName' {
       $script:out[0] | Should -Match 'VER370\s+Delphi 13 Florence'
+    }
+
+    It 'includes a rsvarsPath line with the path' {
+      ($script:out -match 'rsvarsPath\s+C:\\Fake\\Delphi13\\bin\\rsvars\.bat') | Should -Not -BeNullOrEmpty
     }
 
     It 'includes a rsvarsFound line showing true' {
@@ -262,6 +267,10 @@ Describe 'Write-DetectLatestOutput' {
 
     It 'result.buildSystem is MSBuild' {
       $script:json.result.buildSystem | Should -Be 'MSBuild'
+    }
+
+    It 'result.installation.rsvarsPath is the path' {
+      $script:json.result.installation.rsvarsPath | Should -Be 'C:\Fake\Delphi13\bin\rsvars.bat'
     }
 
     It 'result.installation.rsvarsFound is true' {

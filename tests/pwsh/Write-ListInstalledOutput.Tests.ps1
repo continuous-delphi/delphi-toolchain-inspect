@@ -95,6 +95,7 @@ Describe 'Write-ListInstalledOutput' {
       readiness                = 'ready'
       registryFound            = $true
       rootDir                  = 'C:\Fake\Delphi13'
+      rsvarsPath               = 'C:\Fake\Delphi13\bin\rsvars.bat'
       rootDirExists            = $true
       rsvarsFound              = $true
       envOptionsFound          = $true
@@ -107,6 +108,7 @@ Describe 'Write-ListInstalledOutput' {
       readiness                = 'partialInstall'
       registryFound            = $true
       rootDir                  = 'C:\Fake\Delphi13'
+      rsvarsPath               = 'C:\Fake\Delphi13\bin\rsvars.bat'
       rootDirExists            = $true
       rsvarsFound              = $true
       envOptionsFound          = $false
@@ -119,6 +121,7 @@ Describe 'Write-ListInstalledOutput' {
       readiness                = 'notFound'
       registryFound            = $false
       rootDir                  = $null
+      rsvarsPath               = $null
       rootDirExists            = $null
       rsvarsFound              = $null
       envOptionsFound          = $null
@@ -131,6 +134,7 @@ Describe 'Write-ListInstalledOutput' {
       readiness                = 'notApplicable'
       registryFound            = $null
       rootDir                  = $null
+      rsvarsPath               = $null
       rootDirExists            = $null
       rsvarsFound              = $null
       envOptionsFound          = $null
@@ -354,6 +358,11 @@ Describe 'Write-ListInstalledOutput' {
     It 'ready MSBuild entry has rootDir field' {
       $entry = @($script:json.result.installations | Where-Object { $_.readiness -eq 'ready' })[0]
       $entry.rootDir | Should -Be 'C:\Fake\Delphi13'
+    }
+
+    It 'ready MSBuild entry has rsvarsPath field' {
+      $entry = @($script:json.result.installations | Where-Object { $_.readiness -eq 'ready' })[0]
+      $entry.rsvarsPath | Should -Be 'C:\Fake\Delphi13\bin\rsvars.bat'
     }
 
     It 'ready MSBuild entry has rsvarsFound field' {

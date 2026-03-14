@@ -416,6 +416,7 @@ function Get-MSBuildReadiness {
     readiness                = 'notFound'
     registryFound            = $null
     rootDir                  = $null
+    rsvarsPath               = $null
     rootDirExists            = $null
     rsvarsFound              = $null
     envOptionsFound          = $null
@@ -450,8 +451,9 @@ function Get-MSBuildReadiness {
 
   $result.registryFound   = $true
   $result.rootDir         = $rootDir
+  $result.rsvarsPath      = Join-Path $binPath 'rsvars.bat'
   $result.rootDirExists   = Test-Path -LiteralPath $rootDir
-  $result.rsvarsFound     = Test-Path -LiteralPath (Join-Path $binPath 'rsvars.bat')
+  $result.rsvarsFound     = Test-Path -LiteralPath $result.rsvarsPath
   $result.envOptionsFound = Test-Path -LiteralPath $envOptPath
 
   if ($result.envOptionsFound) {
@@ -497,6 +499,7 @@ function Write-ListInstalledOutput {
           readiness                = $inst.readiness
           registryFound            = $inst.registryFound
           rootDir                  = $inst.rootDir
+          rsvarsPath               = $inst.rsvarsPath
           rootDirExists            = $inst.rootDirExists
           rsvarsFound              = $inst.rsvarsFound
           envOptionsFound          = $inst.envOptionsFound
@@ -576,6 +579,7 @@ function Write-DetectLatestOutput {
           readiness                = $Installation.readiness
           registryFound            = $Installation.registryFound
           rootDir                  = $Installation.rootDir
+          rsvarsPath               = $Installation.rsvarsPath
           rootDirExists            = $Installation.rootDirExists
           rsvarsFound              = $Installation.rsvarsFound
           envOptionsFound          = $Installation.envOptionsFound
@@ -610,6 +614,7 @@ function Write-DetectLatestOutput {
     Write-Output ("  {0,-26}{1}" -f 'compilerFound', $Installation.compilerFound.ToString().ToLower())
     Write-Output ("  {0,-26}{1}" -f 'cfgFound', $Installation.cfgFound.ToString().ToLower())
   } else {
+    Write-Output ("  {0,-26}{1}" -f 'rsvarsPath', $Installation.rsvarsPath)
     Write-Output ("  {0,-26}{1}" -f 'rsvarsFound', $Installation.rsvarsFound.ToString().ToLower())
     Write-Output ("  {0,-26}{1}" -f 'envOptionsFound', $Installation.envOptionsFound.ToString().ToLower())
     $hasLibStr = if ($null -ne $Installation.envOptionsHasLibraryPath) { $Installation.envOptionsHasLibraryPath.ToString().ToLower() } else { 'null' }
