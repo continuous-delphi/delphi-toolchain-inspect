@@ -33,6 +33,8 @@ pwsh delphi-toolchain-inspect.ps1 -ListKnown
 pwsh delphi-toolchain-inspect.ps1 -ListKnown -Format json
 pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC
 pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem MSBuild -Format json
+pwsh delphi-toolchain-inspect.ps1 -DetectLatest
+pwsh delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win64 -BuildSystem DCC -Format json
 ```
 
 ## Philosophy
@@ -116,7 +118,8 @@ Dataset resolution priority (if `-DataFile` is not specified):
 |-------------------|--------------------------------------------------|
 | `Version`         | Print tool version and dataset metadata          |
 | `ListKnown`       | List all known Delphi versions from the dataset  |
-| `ListInstalled`   | List all Delphi versions with readiness state |
+| `ListInstalled`   | List all Delphi versions with readiness state    |
+| `DetectLatest`    | Return the single highest-versioned ready install |
 | `Resolve`         | Resolve an alias or VER### to a canonical entry  |
 
 Both implementations use single-dash PascalCase switches (`-Version`, `-ListKnown`).

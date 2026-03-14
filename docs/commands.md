@@ -7,13 +7,14 @@ This document describes the command-line interface for
 
 # Overview
 
-`delphi-toolchain-inspect.ps1` provides four primary actions:
+`delphi-toolchain-inspect.ps1` provides five primary actions:
 
 -   `-Version` --- Display tool and dataset metadata
 -   `-Resolve` --- Resolve a Delphi alias or VER### constant to
     canonical version data
 -   `-ListKnown` --- List all known Delphi versions from the dataset
 -   `-ListInstalled` --- List all Delphi versions with readiness state
+-   `-DetectLatest` --- Return the single highest-versioned ready install
 
 By default, invoking the script with **no switches** performs the
 `-Version` action.
@@ -441,6 +442,108 @@ consumers do not need to track what was requested.
 
 ------------------------------------------------------------------------
 
+## -DetectLatest
+
+Scan this machine for installed Delphi versions and return the single
+highest-versioned entry whose readiness is `ready` for the specified
+platform and build system combination.
+
+Unlike `-ListInstalled`, this command returns at most one entry and
+ignores `partialInstall` entries.  It is intended for CI pipelines
+that need a single, unambiguous compiler path without post-processing
+the full list.
+
+### Syntax
+
+    -DetectLatest [-Platform <platform>] [-BuildSystem <buildSystem>]
+
+### Parameters
+
+`-Platform` (optional, default: `Win32`)
+
+Valid values: `Win32`, `Win64`
+
+The target compilation platform to assess.
+
+`-BuildSystem` (optional, default: `MSBuild`)
+
+Valid values: `DCC`, `MSBuild`
+
+The build system to assess readiness for.  See `-ListInstalled` for
+a description of the `DCC` and `MSBuild` readiness criteria.
+
+### Examples
+
+    pwsh delphi-toolchain-inspect.ps1 -DetectLatest
+    pwsh delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win32 -BuildSystem DCC
+    pwsh delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win64 -BuildSystem MSBuild -Format json
+
+### Output (text format, default)
+
+When a ready installation is found, one block is emitted:
+
+    VER360     Delphi 12 Athens
+      readiness                 ready
+      registryFound             true
+      rootDir                   C:\Program Files (x86)\Embarcadero\Studio\23.0\
+      rootDirExists             true
+      compilerFound             true
+      cfgFound                  true
+
+When no ready installation is found (exit 6):
+
+    No ready installation found
+
+### Output (json format)
+
+When a ready installation is found:
+
+    {
+      "ok": true,
+      "command": "detectLatest",
+      "tool": {
+        "name": "delphi-toolchain-inspect",
+        "impl": "pwsh",
+        "version": "0.1.0"
+      },
+      "result": {
+        "platform": "Win32",
+        "buildSystem": "DCC",
+        "installation": {
+          "verDefine": "VER360",
+          "productName": "Delphi 12 Athens",
+          "readiness": "ready",
+          "registryFound": true,
+          "rootDir": "C:\\Program Files (x86)\\Embarcadero\\Studio\\23.0\\",
+          "rootDirExists": true,
+          "compilerFound": true,
+          "cfgFound": true
+        }
+      }
+    }
+
+When no ready installation is found (exit 6), `installation` is `null`
+and the envelope is still well-formed (`ok: true`):
+
+    {
+      "ok": true,
+      "command": "detectLatest",
+      "tool": { ... },
+      "result": {
+        "platform": "Win32",
+        "buildSystem": "DCC",
+        "installation": null
+      }
+    }
+
+For MSBuild, the component fields inside `installation` are
+`registryFound`, `rootDir`, `rootDirExists`, `rsvarsFound`,
+`envOptionsFound`, and `envOptionsHasLibraryPath`.
+
+`platform` and `buildSystem` are always echoed back in the result.
+
+------------------------------------------------------------------------
+
 # Common Options
 
 ## -Format
@@ -481,12 +584,15 @@ the versions present in that file.
 
 # Parameter Rules
 
--   `-Version`, `-Resolve`, `-ListKnown`, and `-ListInstalled` are
-    mutually exclusive (enforced by PowerShell parameter sets; exit
-    code 1 if more than one is supplied).
+-   `-Version`, `-Resolve`, `-ListKnown`, `-ListInstalled`, and
+    `-DetectLatest` are mutually exclusive (enforced by PowerShell
+    parameter sets; exit code 1 if more than one is supplied).
 -   With no action switch, the default action is `-Version`.
 -   `-Resolve` requires `-Name`; it may be supplied positionally.
 -   `-ListInstalled` requires both `-Platform` and `-BuildSystem`;
+    neither may be supplied positionally.
+-   `-DetectLatest` accepts `-Platform` and `-BuildSystem` as optional
+    parameters with defaults (`Win32` and `MSBuild` respectively);
     neither may be supplied positionally.
 -   `-Format` applies to all actions.
 -   Parameter binding errors are handled by PowerShell (exit code 1).
@@ -502,8 +608,8 @@ the versions present in that file.
 | `2` | Reserved (script-body argument validation; not currently used) |
 | `3` | Dataset missing or unreadable |
 | `4` | Alias not found (`-Resolve` only) |
-| `5` | Registry access error (`-ListInstalled` only) |
-| `6` | No installations found (`-ListInstalled` only) |
+| `5` | Registry access error (`-ListInstalled` and `-DetectLatest` only) |
+| `6` | No installations found (`-ListInstalled` and `-DetectLatest` only) |
 
 
 **PowerShell implementation note:** the PowerShell binder runs before the
@@ -534,7 +640,8 @@ invalid-argument conditions detected inside the script body.
 -   On registry access error (exit 5): stderr contains the error
     message, stdout is empty.
 -   On no installations found (exit 6): stdout contains
-    "No installations found", stderr is empty.
+    "No installations found" (for `-ListInstalled`) or
+    "No ready installation found" (for `-DetectLatest`), stderr is empty.
 
 ## JSON format (-Format json)
 
@@ -548,9 +655,10 @@ invalid-argument conditions detected inside the script body.
     access error (exit 5): stdout contains a JSON error envelope,
     stderr is empty.
 -   On no installations found (exit 6): stdout contains the normal
-    JSON success envelope (ok: true) with all installations listed as
-    notFound; stderr is empty.  Exit code 6 is the signal -- the
-    envelope is still well-formed and machine-readable.
+    JSON success envelope (ok: true); stderr is empty.  Exit code 6 is
+    the signal -- the envelope is still well-formed and machine-readable.
+    For `-ListInstalled`, all installations are listed as notFound.
+    For `-DetectLatest`, `installation` is null.
 
 JSON error envelope:
 
