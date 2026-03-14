@@ -360,6 +360,7 @@ function Get-DccReadiness {
     productName   = $Entry.productName
     readiness     = 'notFound'
     registryFound = $null
+    rootDir       = $null
     rootDirExists = $null
     compilerFound = $null
     cfgFound      = $null
@@ -389,6 +390,7 @@ function Get-DccReadiness {
 
   $binPath = Join-Path $rootDir 'bin'
   $result.registryFound = $true
+  $result.rootDir       = $rootDir
   $result.rootDirExists = Test-Path -LiteralPath $rootDir
   $result.compilerFound = Test-Path -LiteralPath (Join-Path $binPath $compilerExe)
   $result.cfgFound      = Test-Path -LiteralPath (Join-Path $binPath $cfgFile)
@@ -413,6 +415,7 @@ function Get-MSBuildReadiness {
     productName              = $Entry.productName
     readiness                = 'notFound'
     registryFound            = $null
+    rootDir                  = $null
     rootDirExists            = $null
     rsvarsFound              = $null
     envOptionsFound          = $null
@@ -446,6 +449,7 @@ function Get-MSBuildReadiness {
   $envOptPath = Join-Path $env:APPDATA 'Embarcadero' 'BDS' $bdsVersion 'EnvOptions.proj'
 
   $result.registryFound   = $true
+  $result.rootDir         = $rootDir
   $result.rootDirExists   = Test-Path -LiteralPath $rootDir
   $result.rsvarsFound     = Test-Path -LiteralPath (Join-Path $binPath 'rsvars.bat')
   $result.envOptionsFound = Test-Path -LiteralPath $envOptPath
@@ -558,6 +562,7 @@ function Write-DetectLatestOutput {
           productName   = $Installation.productName
           readiness     = $Installation.readiness
           registryFound = $Installation.registryFound
+          rootDir       = $Installation.rootDir
           rootDirExists = $Installation.rootDirExists
           compilerFound = $Installation.compilerFound
           cfgFound      = $Installation.cfgFound
@@ -568,6 +573,7 @@ function Write-DetectLatestOutput {
           productName              = $Installation.productName
           readiness                = $Installation.readiness
           registryFound            = $Installation.registryFound
+          rootDir                  = $Installation.rootDir
           rootDirExists            = $Installation.rootDirExists
           rsvarsFound              = $Installation.rsvarsFound
           envOptionsFound          = $Installation.envOptionsFound
@@ -596,6 +602,7 @@ function Write-DetectLatestOutput {
   Write-Output ("{0,-10} {1}" -f $Installation.verDefine, $Installation.productName)
   Write-Output ("  {0,-26}{1}" -f 'readiness', $Installation.readiness)
   Write-Output ("  {0,-26}{1}" -f 'registryFound', $Installation.registryFound.ToString().ToLower())
+  Write-Output ("  {0,-26}{1}" -f 'rootDir', $Installation.rootDir)
   Write-Output ("  {0,-26}{1}" -f 'rootDirExists', $Installation.rootDirExists.ToString().ToLower())
   if ($BuildSystem -eq 'DCC') {
     Write-Output ("  {0,-26}{1}" -f 'compilerFound', $Installation.compilerFound.ToString().ToLower())

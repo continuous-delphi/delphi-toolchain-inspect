@@ -163,6 +163,10 @@ Describe 'Get-MSBuildReadiness' {
       $script:result.registryFound | Should -Be $true
     }
 
+    It 'rootDir is the value returned by Get-RegistryRootDir' {
+      $script:result.rootDir | Should -Be 'C:\Fake\Delphi13'
+    }
+
     It 'rootDirExists is true' {
       $script:result.rootDirExists | Should -Be $true
     }
@@ -198,6 +202,10 @@ Describe 'Get-MSBuildReadiness' {
 
     It 'readiness is partialInstall' {
       $script:result.readiness | Should -Be 'partialInstall'
+    }
+
+    It 'rootDir is the value returned by Get-RegistryRootDir' {
+      $script:result.rootDir | Should -Be 'C:\Fake\Delphi13'
     }
 
     It 'rootDirExists is false' {

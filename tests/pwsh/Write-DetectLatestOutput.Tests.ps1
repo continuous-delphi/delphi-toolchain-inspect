@@ -44,6 +44,7 @@ Describe 'Write-DetectLatestOutput' {
       productName   = 'Delphi 13 Florence'
       readiness     = 'ready'
       registryFound = $true
+      rootDir       = 'C:\Fake\Delphi13'
       rootDirExists = $true
       compilerFound = $true
       cfgFound      = $true
@@ -56,6 +57,7 @@ Describe 'Write-DetectLatestOutput' {
       productName              = 'Delphi 13 Florence'
       readiness                = 'ready'
       registryFound            = $true
+      rootDir                  = 'C:\Fake\Delphi13'
       rootDirExists            = $true
       rsvarsFound              = $true
       envOptionsFound          = $true
@@ -101,6 +103,10 @@ Describe 'Write-DetectLatestOutput' {
 
     It 'includes a registryFound line showing true' {
       ($script:out -match 'registryFound\s+true') | Should -Not -BeNullOrEmpty
+    }
+
+    It 'includes a rootDir line with the path' {
+      ($script:out -match 'rootDir\s+C:\\Fake\\Delphi13') | Should -Not -BeNullOrEmpty
     }
 
     It 'includes a rootDirExists line showing true' {
@@ -200,6 +206,10 @@ Describe 'Write-DetectLatestOutput' {
 
     It 'result.installation.readiness is ready' {
       $script:json.result.installation.readiness | Should -Be 'ready'
+    }
+
+    It 'result.installation.rootDir is the path' {
+      $script:json.result.installation.rootDir | Should -Be 'C:\Fake\Delphi13'
     }
 
     It 'result.installation.compilerFound is true' {
