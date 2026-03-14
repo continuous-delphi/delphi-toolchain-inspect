@@ -185,6 +185,10 @@ Describe 'Get-DccReadiness' {
       $script:result.registryFound | Should -Be $true
     }
 
+    It 'rootDir is the value returned by Get-RegistryRootDir' {
+      $script:result.rootDir | Should -Be 'C:\Fake\Delphi7'
+    }
+
     It 'rootDirExists is true' {
       $script:result.rootDirExists | Should -Be $true
     }
@@ -251,6 +255,10 @@ Describe 'Get-DccReadiness' {
 
     It 'registryFound is true' {
       $script:result.registryFound | Should -Be $true
+    }
+
+    It 'rootDir is the value returned by Get-RegistryRootDir' {
+      $script:result.rootDir | Should -Be 'C:\Fake\Delphi7'
     }
 
     It 'rootDirExists is false' {
