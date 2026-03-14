@@ -156,7 +156,7 @@ Uses `Mock Get-RegistryRootDir`, `Mock Test-Path`, and `Mock Test-EnvOptionsLibr
 - bdsVersion extracted from regKeyRelativePath leaf: EnvOptions.proj path contains
   version component (37.0) from VER370's registry key
 
-### Write-DetectInstalledOutput (32 tests)
+### Write-ListInstalledOutput (32 tests)
 
 Tests text and JSON output formatting.
 Uses in-memory pscustomobject arrays -- no mocking required.
@@ -166,7 +166,7 @@ Uses in-memory pscustomobject arrays -- no mocking required.
 - Text, DCC, two entries: two header lines present, blank separator between blocks
 - Text, DCC, mixed: notFound and notApplicable entries suppressed; only ready appears
 - Text, MSBuild, null envOptionsHasLibraryPath: shows "null" string; no DCC-specific lines
-- JSON, DCC mode: ok=true/command=detectInstalled/result.platform+buildSystem+installations;
+- JSON, DCC mode: ok=true/command=listInstalled/result.platform+buildSystem+installations;
   notApplicable entry has registryFound=null; notFound entry has registryFound=false
 - JSON, MSBuild mode: result.buildSystem=MSBuild; MSBuild-specific fields present;
   notApplicable entry has registryFound=null
@@ -198,14 +198,14 @@ skips during unit tests.
 - `-ListKnown` + valid `-DataFile`: exit 0, exactly 2 stdout lines, VER150 entry line present, clean stderr
 - `-ListKnown -Format json` + valid `-DataFile`: exit 0, stdout parses as JSON, ok=true/command=listKnown, result.versions non-empty, clean stderr
 - `-Format yaml` (invalid value): exit 1 (parameter binder rejects ValidateSet value), no stdout, stderr present
-- `-DetectInstalled -Platform Win32 -BuildSystem DCC` (text): exit 6, stdout is "No installations found", clean stderr
-- `-DetectInstalled -Platform Win32 -BuildSystem DCC -Format json`: exit 6, JSON ok=true/command=detectInstalled,
+- `-ListInstalled -Platform Win32 -BuildSystem DCC` (text): exit 6, stdout is "No installations found", clean stderr
+- `-ListInstalled -Platform Win32 -BuildSystem DCC -Format json`: exit 6, JSON ok=true/command=listInstalled,
   result.platform=Win32/buildSystem=DCC, 3 installations; VER999 (MSBuild-only) has
   readiness=notApplicable/registryFound=null; VER150 has readiness=notFound/registryFound=false; clean stderr
-- `-DetectInstalled -Platform Win32 -BuildSystem MSBuild -Format json`: exit 6, JSON ok=true/command=detectInstalled,
+- `-ListInstalled -Platform Win32 -BuildSystem MSBuild -Format json`: exit 6, JSON ok=true/command=listInstalled,
   result.buildSystem=MSBuild, clean stderr
-- `-DetectInstalled` without `-Platform`: exit 1 (parameter binding), no stdout, stderr present
-- `-DetectInstalled` without `-BuildSystem`: exit 1 (parameter binding), no stdout, stderr present
+- `-ListInstalled` without `-Platform`: exit 1 (parameter binding), no stdout, stderr present
+- `-ListInstalled` without `-BuildSystem`: exit 1 (parameter binding), no stdout, stderr present
 
 The error text for the binder-failure cases is produced by PowerShell's parameter
 binder, not by the script.  The exact phrasing is version-dependent; the tests

@@ -95,31 +95,31 @@
     Exit 0, stdout parses as valid JSON, ok=true, command='listKnown',
     result.versions is non-empty.  Clean stderr.
 
-  Contexts 20-24 cover the -DetectInstalled dispatch branch.  All supply -DataFile
-  explicitly using the detect fixture (delphi-compiler-versions.detect.json).
-  The detect fixture has 3 entries: VER150 (DCC/Win32), VER999 (MSBuild/Win32 synthetic),
+  Contexts 20-24 cover the -ListInstalled dispatch branch.  All supply -DataFile
+  explicitly using the listInstalled fixture (delphi-compiler-versions.listknown.json).
+  The listInstalled fixture has 3 entries: VER150 (DCC/Win32), VER999 (MSBuild/Win32 synthetic),
   VER370 (DCC+MSBuild/Win32+Win64).  The test machine has no Delphi installed so all
   registry checks return notFound; VER999 is notApplicable for DCC builds.
 
-  Context 20 - -DetectInstalled -Platform Win32 -BuildSystem DCC (text mode):
+  Context 20 - -ListInstalled -Platform Win32 -BuildSystem DCC (text mode):
     Exit 6 (no installations found), stdout is "No installations found", clean stderr.
 
-  Context 21 - -DetectInstalled -Platform Win32 -BuildSystem DCC -Format json:
-    Exit 6, stdout parses as JSON, ok=true, command=detectInstalled,
-    result.platform=Win32/result.buildSystem=DCC, installations count matches detect fixture,
+  Context 21 - -ListInstalled -Platform Win32 -BuildSystem DCC -Format json:
+    Exit 6, stdout parses as JSON, ok=true, command=listInstalled,
+    result.platform=Win32/result.buildSystem=DCC, installations count matches listInstalled fixture,
     VER999 has registryFound=null (notApplicable), VER150/VER370 have registryFound=false.
     Clean stderr.
 
-  Context 22 - -DetectInstalled -Platform Win32 -BuildSystem MSBuild -Format json:
-    Exit 6, stdout parses as JSON, ok=true, command=detectInstalled,
-    result.buildSystem=MSBuild, installations count matches detect fixture.  VER150 (DCC-only) is
+  Context 22 - -ListInstalled -Platform Win32 -BuildSystem MSBuild -Format json:
+    Exit 6, stdout parses as JSON, ok=true, command=listInstalled,
+    result.buildSystem=MSBuild, installations count matches listInstalled fixture.  VER150 (DCC-only) is
     notApplicable/registryFound=null; VER999 (MSBuild/Win32) is
     notFound/registryFound=false.  Clean stderr.
 
-  Context 23 - -DetectInstalled without -Platform:
+  Context 23 - -ListInstalled without -Platform:
     Exit 1 (PowerShell parameter binding rejects the invocation), no stdout, stderr present.
 
-  Context 24 - -DetectInstalled without -BuildSystem:
+  Context 24 - -ListInstalled without -BuildSystem:
     Exit 1 (PowerShell parameter binding rejects the invocation), no stdout, stderr present.
 
   Context 25 - registry access failure, text mode (via detect-registry-error-shim.ps1):
@@ -137,10 +137,10 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
     $script:scriptPath             = Get-ScriptUnderTestPath
     $script:fixturePath            = Get-MinFixturePath
     $script:resolveFixturePath     = Get-ResolveFixturePath
-    $script:detectFixturePath      = Get-DetectFixturePath
+    $script:listInstalledFixturePath      = Get-DetectFixturePath
     $script:registryErrorShimPath  = Get-RegistryErrorShimPath
 
-    $script:detectFixtureVersionCount  = ((Get-Content -LiteralPath $script:detectFixturePath -Raw |
+    $script:listInstalledFixtureVersionCount  = ((Get-Content -LiteralPath $script:listInstalledFixturePath -Raw |
         ConvertFrom-Json).versions | Measure-Object).Count
     $script:resolveFixtureVersionCount = ((Get-Content -LiteralPath $script:resolveFixturePath -Raw |
         ConvertFrom-Json).versions | Measure-Object).Count
@@ -666,11 +666,11 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
   }
 
-  Context 'Given -DetectInstalled -Platform Win32 -BuildSystem DCC (text mode, no installations)' {
+  Context 'Given -ListInstalled -Platform Win32 -BuildSystem DCC (text mode, no installations)' {
 
     BeforeAll {
       $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                       -Arguments @('-DetectInstalled', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-DataFile', $script:detectFixturePath)
+                                       -Arguments @('-ListInstalled', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-DataFile', $script:listInstalledFixturePath)
     }
 
     It 'exits with code 6 (no installations found)' {
@@ -692,11 +692,11 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
   }
 
-  Context 'Given -DetectInstalled -Platform Win32 -BuildSystem DCC -Format json' {
+  Context 'Given -ListInstalled -Platform Win32 -BuildSystem DCC -Format json' {
 
     BeforeAll {
       $script:run  = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                        -Arguments @('-DetectInstalled', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-Format', 'json', '-DataFile', $script:detectFixturePath)
+                                        -Arguments @('-ListInstalled', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-Format', 'json', '-DataFile', $script:listInstalledFixturePath)
       $script:json = ($script:run.StdOut -join "`n") | ConvertFrom-Json
     }
 
@@ -708,9 +708,9 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
       { ($script:run.StdOut -join "`n") | ConvertFrom-Json } | Should -Not -Throw
     }
 
-    It 'JSON ok is true and command is detectInstalled' {
+    It 'JSON ok is true and command is listInstalled' {
       $script:json.ok      | Should -Be $true
-      $script:json.command | Should -Be 'detectInstalled'
+      $script:json.command | Should -Be 'listInstalled'
     }
 
     It 'JSON result.platform is Win32' {
@@ -721,8 +721,8 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
       $script:json.result.buildSystem | Should -Be 'DCC'
     }
 
-    It 'JSON result.installations has one entry per detect fixture entry' {
-      $script:json.result.installations | Should -HaveCount $script:detectFixtureVersionCount
+    It 'JSON result.installations has one entry per listInstalled fixture entry' {
+      $script:json.result.installations | Should -HaveCount $script:listInstalledFixtureVersionCount
     }
 
     It 'VER999 (MSBuild-only) entry has readiness=notApplicable and registryFound=null' {
@@ -746,11 +746,11 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
   }
 
-  Context 'Given -DetectInstalled -Platform Win32 -BuildSystem MSBuild -Format json' {
+  Context 'Given -ListInstalled -Platform Win32 -BuildSystem MSBuild -Format json' {
 
     BeforeAll {
       $script:run  = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                        -Arguments @('-DetectInstalled', '-Platform', 'Win32', '-BuildSystem', 'MSBuild', '-Format', 'json', '-DataFile', $script:detectFixturePath)
+                                        -Arguments @('-ListInstalled', '-Platform', 'Win32', '-BuildSystem', 'MSBuild', '-Format', 'json', '-DataFile', $script:listInstalledFixturePath)
       $script:json = ($script:run.StdOut -join "`n") | ConvertFrom-Json
     }
 
@@ -762,17 +762,17 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
       { ($script:run.StdOut -join "`n") | ConvertFrom-Json } | Should -Not -Throw
     }
 
-    It 'JSON ok is true and command is detectInstalled' {
+    It 'JSON ok is true and command is listInstalled' {
       $script:json.ok      | Should -Be $true
-      $script:json.command | Should -Be 'detectInstalled'
+      $script:json.command | Should -Be 'listInstalled'
     }
 
     It 'JSON result.buildSystem is MSBuild' {
       $script:json.result.buildSystem | Should -Be 'MSBuild'
     }
 
-    It 'JSON result.installations has one entry per detect fixture entry' {
-      $script:json.result.installations | Should -HaveCount $script:detectFixtureVersionCount
+    It 'JSON result.installations has one entry per listInstalled fixture entry' {
+      $script:json.result.installations | Should -HaveCount $script:listInstalledFixtureVersionCount
     }
 
     It 'VER150 (DCC-only) entry has readiness=notApplicable and registryFound=null' {
@@ -798,11 +798,11 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
   }
 
-  Context 'Given -DetectInstalled without -Platform' {
+  Context 'Given -ListInstalled without -Platform' {
 
     BeforeAll {
       $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                       -Arguments @('-DetectInstalled', '-BuildSystem', 'DCC', '-DataFile', $script:detectFixturePath)
+                                       -Arguments @('-ListInstalled', '-BuildSystem', 'DCC', '-DataFile', $script:listInstalledFixturePath)
     }
 
     It 'exits with code 1 (PowerShell parameter binding failure)' {
@@ -819,11 +819,11 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
   }
 
-  Context 'Given -DetectInstalled without -BuildSystem' {
+  Context 'Given -ListInstalled without -BuildSystem' {
 
     BeforeAll {
       $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                       -Arguments @('-DetectInstalled', '-Platform', 'Win32', '-DataFile', $script:detectFixturePath)
+                                       -Arguments @('-ListInstalled', '-Platform', 'Win32', '-DataFile', $script:listInstalledFixturePath)
     }
 
     It 'exits with code 1 (PowerShell parameter binding failure)' {
@@ -865,7 +865,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
     BeforeAll {
       $script:run = Invoke-ToolProcess -ScriptPath $script:registryErrorShimPath `
-                                       -Arguments @('-DataFile', $script:detectFixturePath, '-Platform', 'Win32', '-BuildSystem', 'DCC')
+                                       -Arguments @('-DataFile', $script:listInstalledFixturePath, '-Platform', 'Win32', '-BuildSystem', 'DCC')
     }
 
     It 'exits with code 5 (registry error)' {
@@ -887,7 +887,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
     BeforeAll {
       $script:run  = Invoke-ToolProcess -ScriptPath $script:registryErrorShimPath `
-                                        -Arguments @('-DataFile', $script:detectFixturePath, '-Platform', 'Win32', '-BuildSystem', 'DCC', '-Format', 'json')
+                                        -Arguments @('-DataFile', $script:listInstalledFixturePath, '-Platform', 'Win32', '-BuildSystem', 'DCC', '-Format', 'json')
       $script:json = ($script:run.StdOut -join "`n") | ConvertFrom-Json
     }
 

@@ -45,14 +45,14 @@ Describe 'Get-MSBuildReadiness' {
     $script:scriptUnderTest = Get-ScriptUnderTestPath
     . $script:scriptUnderTest
 
-    $script:detectFixturePath = Get-DetectFixturePath
-    $script:data = Import-JsonData -Path $script:detectFixturePath
+    $script:listInstalledFixturePath = Get-DetectFixturePath
+    $script:data = Import-JsonData -Path $script:listInstalledFixturePath
 
     # VER150: DCC+Win32 only -- MSBuild is notApplicable
     $script:entryDccOnly      = $script:data.versions[0]
     # VER999: MSBuild+Win32 only
     $script:entryMSBuildWin32 = $script:data.versions[1]
-    # VER370: DCC+MSBuild, Win32+Win64; regKeyRelativePath ends in 37.0
+    # VER980: DCC+MSBuild, Win32+Win64; regKeyRelativePath ends in 98.0
     $script:entryBoth         = $script:data.versions[2]
 
     # Synthetic entry with no regKeyRelativePath
@@ -286,12 +286,12 @@ Describe 'Get-MSBuildReadiness' {
       $script:result = Get-MSBuildReadiness -Entry $script:entryBoth -Platform 'Win32'
     }
 
-    It 'EnvOptions.proj path contains the bdsVersion leaf (37.0) from regKeyRelativePath' {
+    It 'EnvOptions.proj path contains the bdsVersion leaf (98.0) from regKeyRelativePath' {
       # Call inside the It so Pester 5 tracks it in this test's call history
-      # VER370 regKeyRelativePath ends in 37.0; the constructed path must include it
+      # VER980 regKeyRelativePath ends in 98.0; the constructed path must include it
       Get-MSBuildReadiness -Entry $script:entryBoth -Platform 'Win32' | Out-Null
       Should -Invoke Test-Path -ParameterFilter {
-        $LiteralPath -match '37\.0' -and $LiteralPath -match 'EnvOptions\.proj'
+        $LiteralPath -match '98\.0' -and $LiteralPath -match 'EnvOptions\.proj'
       }
     }
 

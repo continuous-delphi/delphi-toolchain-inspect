@@ -1,4 +1,4 @@
-# delphi-toolchain-inspect
+ # delphi-toolchain-inspect
 
 ![Status](https://img.shields.io/badge/status-incubator-orange)
 ![License](https://img.shields.io/github/license/continuous-delphi/delphi-toolchain-inspect)
@@ -31,8 +31,8 @@ pwsh delphi-toolchain-inspect.ps1 -Resolve "Delphi 11"
 pwsh delphi-toolchain-inspect.ps1 -Resolve D7 -Format json
 pwsh delphi-toolchain-inspect.ps1 -ListKnown
 pwsh delphi-toolchain-inspect.ps1 -ListKnown -Format json
-pwsh delphi-toolchain-inspect.ps1 -DetectInstalled -Platform Win32 -BuildSystem DCC
-pwsh delphi-toolchain-inspect.ps1 -DetectInstalled -Platform Win32 -BuildSystem MSBuild -Format json
+pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC
+pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem MSBuild -Format json
 ```
 
 ## Philosophy
@@ -116,7 +116,7 @@ Dataset resolution priority (if `-DataFile` is not specified):
 |-------------------|--------------------------------------------------|
 | `Version`         | Print tool version and dataset metadata          |
 | `ListKnown`       | List all known Delphi versions from the dataset  |
-| `DetectInstalled` | Detect installed Delphi versions via registry    |
+| `ListInstalled`   | List all Delphi versions with readiness state |
 | `Resolve`         | Resolve an alias or VER### to a canonical entry  |
 
 Both implementations use single-dash PascalCase switches (`-Version`, `-ListKnown`).

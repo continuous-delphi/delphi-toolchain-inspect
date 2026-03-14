@@ -42,14 +42,14 @@ Describe 'Get-DccReadiness' {
     $script:scriptUnderTest = Get-ScriptUnderTestPath
     . $script:scriptUnderTest
 
-    $script:detectFixturePath = Get-DetectFixturePath
-    $script:data = Import-JsonData -Path $script:detectFixturePath
+    $script:listInstalledFixturePath = Get-DetectFixturePath
+    $script:data = Import-JsonData -Path $script:listInstalledFixturePath
 
     # VER150: DCC+Win32 only
     $script:entryDccWin32    = $script:data.versions[0]
     # VER999: MSBuild+Win32 only -- DCC is notApplicable
     $script:entryMSBuildOnly = $script:data.versions[1]
-    # VER370: DCC+MSBuild, Win32+Win64
+    # VER998: DCC+MSBuild, Win32+Win64
     $script:entryBoth        = $script:data.versions[2]
 
     # Synthetic entry with no regKeyRelativePath (covers early-return path)

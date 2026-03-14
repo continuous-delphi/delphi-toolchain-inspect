@@ -1,0 +1,361 @@
+#Requires -Modules @{ ModuleName='Pester'; ModuleVersion='5.7.0' }
+<#
+.SYNOPSIS
+  Tests for Write-ListInstalledOutput in delphi-toolchain-inspect.ps1
+
+.DESCRIPTION
+  Covers: text and JSON output formatting for -ListInstalled results.
+  No mocking required -- in-memory pscustomobject arrays are passed directly.
+
+  Context 1 - Text, DCC, all entries notFound or notApplicable:
+    Emits exactly one line: "No installations found".
+
+  Context 2 - Text, DCC, one ready entry:
+    Header line, readiness/registryFound/rootDirExists/compilerFound/cfgFound lines.
+    No MSBuild-specific lines.
+
+  Context 3 - Text, DCC, two entries (blank-line separator):
+    Two header lines present; at least one blank separator between blocks.
+
+  Context 4 - Text, DCC, notFound and notApplicable entries suppressed:
+    Only ready/partialInstall entries appear in text output.
+
+  Context 5 - Text, MSBuild, partialInstall with null envOptionsHasLibraryPath:
+    Shows "null" for envOptionsHasLibraryPath; no DCC-specific lines.
+
+  Context 6 - JSON, DCC mode:
+    ok=true, command=listInstalled, result.platform/buildSystem/installations.
+    notApplicable entry has registryFound=null; notFound entry has registryFound=false.
+
+  Context 7 - JSON, MSBuild mode:
+    result.buildSystem=MSBuild; MSBuild-specific fields present on entries.
+    notApplicable entry has registryFound=null.
+#>
+
+Describe 'Write-ListInstalledOutput' {
+
+  BeforeAll {
+    . "$PSScriptRoot/TestHelpers.ps1"
+    $script:scriptUnderTest = Get-ScriptUnderTestPath
+    . $script:scriptUnderTest
+
+    $script:toolVersion = '0.1.0'
+
+    # ---- DCC in-memory fixtures ----
+
+    $script:readyDcc = [pscustomobject]@{
+      verDefine     = 'VER150'
+      productName   = 'Delphi 7'
+      readiness     = 'ready'
+      registryFound = $true
+      rootDirExists = $true
+      compilerFound = $true
+      cfgFound      = $true
+    }
+
+    $script:partialDcc = [pscustomobject]@{
+      verDefine     = 'VER370'
+      productName   = 'Delphi 13 Florence'
+      readiness     = 'partialInstall'
+      registryFound = $true
+      rootDirExists = $true
+      compilerFound = $false
+      cfgFound      = $true
+    }
+
+    $script:notFoundDcc = [pscustomobject]@{
+      verDefine     = 'VER000'
+      productName   = 'Delphi Ghost'
+      readiness     = 'notFound'
+      registryFound = $false
+      rootDirExists = $null
+      compilerFound = $null
+      cfgFound      = $null
+    }
+
+    $script:notApplicableDcc = [pscustomobject]@{
+      verDefine     = 'VER999'
+      productName   = 'Delphi Synthetic'
+      readiness     = 'notApplicable'
+      registryFound = $null
+      rootDirExists = $null
+      compilerFound = $null
+      cfgFound      = $null
+    }
+
+    # ---- MSBuild in-memory fixtures ----
+
+    $script:readyMSBuild = [pscustomobject]@{
+      verDefine                = 'VER370'
+      productName              = 'Delphi 13 Florence'
+      readiness                = 'ready'
+      registryFound            = $true
+      rootDirExists            = $true
+      rsvarsFound              = $true
+      envOptionsFound          = $true
+      envOptionsHasLibraryPath = $true
+    }
+
+    $script:partialMSBuildNoEnvOpts = [pscustomobject]@{
+      verDefine                = 'VER370'
+      productName              = 'Delphi 13 Florence'
+      readiness                = 'partialInstall'
+      registryFound            = $true
+      rootDirExists            = $true
+      rsvarsFound              = $true
+      envOptionsFound          = $false
+      envOptionsHasLibraryPath = $null
+    }
+
+    $script:notFoundMSBuild = [pscustomobject]@{
+      verDefine                = 'VER999'
+      productName              = 'Delphi Synthetic'
+      readiness                = 'notFound'
+      registryFound            = $false
+      rootDirExists            = $null
+      rsvarsFound              = $null
+      envOptionsFound          = $null
+      envOptionsHasLibraryPath = $null
+    }
+
+    $script:notApplicableMSBuild = [pscustomobject]@{
+      verDefine                = 'VER150'
+      productName              = 'Delphi 7'
+      readiness                = 'notApplicable'
+      registryFound            = $null
+      rootDirExists            = $null
+      rsvarsFound              = $null
+      envOptionsFound          = $null
+      envOptionsHasLibraryPath = $null
+    }
+  }
+
+  Context 'Text, DCC, all entries notFound or notApplicable' {
+
+    BeforeAll {
+      $script:out = Write-ListInstalledOutput `
+        -Installations @($script:notFoundDcc, $script:notApplicableDcc) `
+        -Platform 'Win32' -BuildSystem 'DCC' `
+        -ToolVersion $script:toolVersion
+    }
+
+    It 'emits exactly one line' {
+      $script:out | Should -HaveCount 1
+    }
+
+    It 'line is "No installations found"' {
+      $script:out | Should -Be 'No installations found'
+    }
+
+  }
+
+  Context 'Text, DCC, one ready entry' {
+
+    BeforeAll {
+      $script:out = Write-ListInstalledOutput `
+        -Installations @($script:readyDcc) `
+        -Platform 'Win32' -BuildSystem 'DCC' `
+        -ToolVersion $script:toolVersion
+    }
+
+    It 'first line contains verDefine and productName' {
+      $script:out[0] | Should -Match 'VER150\s+Delphi 7'
+    }
+
+    It 'includes a readiness line showing ready' {
+      ($script:out -match 'readiness\s+ready') | Should -Not -BeNullOrEmpty
+    }
+
+    It 'includes a registryFound line showing true' {
+      ($script:out -match 'registryFound\s+true') | Should -Not -BeNullOrEmpty
+    }
+
+    It 'includes a rootDirExists line showing true' {
+      ($script:out -match 'rootDirExists\s+true') | Should -Not -BeNullOrEmpty
+    }
+
+    It 'includes a compilerFound line showing true' {
+      ($script:out -match 'compilerFound\s+true') | Should -Not -BeNullOrEmpty
+    }
+
+    It 'includes a cfgFound line showing true' {
+      ($script:out -match 'cfgFound\s+true') | Should -Not -BeNullOrEmpty
+    }
+
+    It 'does not include MSBuild-specific rsvarsFound line' {
+      ($script:out -match '^\s+rsvarsFound') | Should -BeNullOrEmpty
+    }
+
+    It 'does not include MSBuild-specific envOptionsFound line' {
+      ($script:out -match '^\s+envOptionsFound') | Should -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Text, DCC, two entries separated by a blank line' {
+
+    BeforeAll {
+      $script:out = Write-ListInstalledOutput `
+        -Installations @($script:readyDcc, $script:partialDcc) `
+        -Platform 'Win32' -BuildSystem 'DCC' `
+        -ToolVersion $script:toolVersion
+    }
+
+    It 'blank separator line is positioned between the two header lines' {
+      # @() forces empty array -- Where-Object returns $null under StrictMode when no matches
+      $headerIdx = @(0..($script:out.Count - 1) | Where-Object { $script:out[$_] -match '^VER' })
+      $blankIdx  = @(0..($script:out.Count - 1) | Where-Object { $script:out[$_] -eq '' })
+      $headerIdx | Should -HaveCount 2
+      $blankIdx  | Should -Not -BeNullOrEmpty
+      $blankIdx[0] | Should -BeGreaterThan $headerIdx[0]
+      $blankIdx[0] | Should -BeLessThan    $headerIdx[1]
+    }
+
+  }
+
+  Context 'Text, DCC, notFound and notApplicable entries suppressed' {
+
+    BeforeAll {
+      $script:out = Write-ListInstalledOutput `
+        -Installations @($script:notFoundDcc, $script:readyDcc, $script:notApplicableDcc) `
+        -Platform 'Win32' -BuildSystem 'DCC' `
+        -ToolVersion $script:toolVersion
+    }
+
+    It 'ready entry VER150 appears in output' {
+      ($script:out -match 'VER150') | Should -Not -BeNullOrEmpty
+    }
+
+    It 'notFound entry VER000 does not appear in output' {
+      ($script:out -match 'VER000') | Should -BeNullOrEmpty
+    }
+
+    It 'notApplicable entry VER999 does not appear in output' {
+      ($script:out -match 'VER999') | Should -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Text, MSBuild, partialInstall with null envOptionsHasLibraryPath' {
+
+    BeforeAll {
+      $script:out = Write-ListInstalledOutput `
+        -Installations @($script:partialMSBuildNoEnvOpts) `
+        -Platform 'Win32' -BuildSystem 'MSBuild' `
+        -ToolVersion $script:toolVersion
+    }
+
+    It 'includes a rsvarsFound line' {
+      ($script:out -match 'rsvarsFound\s+true') | Should -Not -BeNullOrEmpty
+    }
+
+    It 'includes an envOptionsFound line showing false' {
+      ($script:out -match 'envOptionsFound\s+false') | Should -Not -BeNullOrEmpty
+    }
+
+    It 'includes envOptionsHasLibraryPath line showing null' {
+      ($script:out -match 'envOptionsHasLibraryPath\s+null') | Should -Not -BeNullOrEmpty
+    }
+
+    It 'does not include DCC-specific compilerFound line' {
+      ($script:out -match '^\s+compilerFound') | Should -BeNullOrEmpty
+    }
+
+    It 'does not include DCC-specific cfgFound line' {
+      ($script:out -match '^\s+cfgFound') | Should -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'JSON, DCC mode - structure and readiness distinctions' {
+
+    BeforeAll {
+      $rawOut = Write-ListInstalledOutput `
+        -Installations @($script:readyDcc, $script:notFoundDcc, $script:notApplicableDcc) `
+        -Platform 'Win32' -BuildSystem 'DCC' `
+        -ToolVersion $script:toolVersion -Format 'json'
+      $script:json = ($rawOut -join "`n") | ConvertFrom-Json
+    }
+
+    It 'output parses as valid JSON' {
+      { ($rawOut -join "`n") | ConvertFrom-Json } | Should -Not -Throw
+    }
+
+    It 'ok is true' {
+      $script:json.ok | Should -Be $true
+    }
+
+    It 'command is listInstalled' {
+      $script:json.command | Should -Be 'listInstalled'
+    }
+
+    It 'result.platform is Win32' {
+      $script:json.result.platform | Should -Be 'Win32'
+    }
+
+    It 'result.buildSystem is DCC' {
+      $script:json.result.buildSystem | Should -Be 'DCC'
+    }
+
+    It 'result.installations has 3 entries (one per in-memory input)' {
+      # Count matches the 3 pscustomobjects passed to the function above.
+      $script:json.result.installations | Should -HaveCount 3
+    }
+
+    It 'ready entry has compilerFound field' {
+      $entry = @($script:json.result.installations | Where-Object { $_.readiness -eq 'ready' })[0]
+      $entry | Should -Not -BeNull
+      $entry.compilerFound | Should -Be $true
+    }
+
+    It 'notApplicable entry has registryFound=null' {
+      $entry = @($script:json.result.installations | Where-Object { $_.readiness -eq 'notApplicable' })[0]
+      $entry | Should -Not -BeNull
+      $entry.registryFound | Should -BeNull
+    }
+
+    It 'notFound entry has registryFound=false' {
+      $entry = @($script:json.result.installations | Where-Object { $_.readiness -eq 'notFound' })[0]
+      $entry | Should -Not -BeNull
+      $entry.registryFound | Should -Be $false
+    }
+
+  }
+
+  Context 'JSON, MSBuild mode - MSBuild-specific fields' {
+
+    BeforeAll {
+      $rawOut = Write-ListInstalledOutput `
+        -Installations @($script:readyMSBuild, $script:notApplicableMSBuild) `
+        -Platform 'Win32' -BuildSystem 'MSBuild' `
+        -ToolVersion $script:toolVersion -Format 'json'
+      $script:json = ($rawOut -join "`n") | ConvertFrom-Json
+    }
+
+    It 'result.buildSystem is MSBuild' {
+      $script:json.result.buildSystem | Should -Be 'MSBuild'
+    }
+
+    It 'ready MSBuild entry has rsvarsFound field' {
+      $entry = @($script:json.result.installations | Where-Object { $_.readiness -eq 'ready' })[0]
+      $entry.rsvarsFound | Should -Be $true
+    }
+
+    It 'ready MSBuild entry has envOptionsFound field' {
+      $entry = @($script:json.result.installations | Where-Object { $_.readiness -eq 'ready' })[0]
+      $entry.envOptionsFound | Should -Be $true
+    }
+
+    It 'ready MSBuild entry has envOptionsHasLibraryPath field' {
+      $entry = @($script:json.result.installations | Where-Object { $_.readiness -eq 'ready' })[0]
+      $entry.envOptionsHasLibraryPath | Should -Be $true
+    }
+
+    It 'notApplicable MSBuild entry has registryFound=null' {
+      $entry = @($script:json.result.installations | Where-Object { $_.readiness -eq 'notApplicable' })[0]
+      $entry.registryFound | Should -BeNull
+    }
+
+  }
+
+}

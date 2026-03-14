@@ -8,7 +8,7 @@
 #   Get-ScriptUnderTestPath    - returns absolute path to delphi-toolchain-inspect.ps1
 #   Get-MinFixturePath         - returns absolute path to the minimal fixture JSON
 #   Get-ResolveFixturePath     - returns absolute path to the resolve fixture JSON
-#   Get-DetectFixturePath      - returns absolute path to the detect fixture JSON
+#   Get-DetectFixturePath      - returns absolute path to the listInstalled fixture JSON
 #   Get-RegistryErrorShimPath  - returns absolute path to detect-registry-error-shim.ps1
 #   Invoke-ToolProcess         - runs delphi-toolchain-inspect.ps1 as a child process and
 #                                returns [pscustomobject]@{ ExitCode; StdOut; StdErr }
@@ -48,7 +48,7 @@ function Get-ResolveFixturePath {
 }
 
 function Get-DetectFixturePath {
-  $path = Join-Path $PSScriptRoot 'fixtures' 'delphi-compiler-versions.detect.json'
+  $path = Join-Path $PSScriptRoot 'fixtures' 'delphi-compiler-versions.listknown.json'
   return [System.IO.Path]::GetFullPath($path)
 }
 

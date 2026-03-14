@@ -13,9 +13,7 @@ This document describes the command-line interface for
 -   `-Resolve` --- Resolve a Delphi alias or VER### constant to
     canonical version data
 -   `-ListKnown` --- List all known Delphi versions from the dataset
--   `-DetectInstalled` --- Detect installed Delphi versions on this
-    machine and report readiness for a specific platform and build
-    system
+-   `-ListInstalled` --- List all Delphi versions with readiness state
 
 By default, invoking the script with **no switches** performs the
 `-Version` action.
@@ -214,7 +212,7 @@ All version entry fields are always present regardless of null status.
 
 ------------------------------------------------------------------------
 
-## -DetectInstalled
+## -ListInstalled
 
 Scan this machine for installed Delphi versions and report their
 readiness for a specific platform and build system combination.
@@ -225,7 +223,7 @@ systems or platforms, invoke the command multiple times.
 
 ### Syntax
 
-    -DetectInstalled -Platform <platform> -BuildSystem <buildSystem>
+    -ListInstalled -Platform <platform> -BuildSystem <buildSystem>
 
 ### Parameters
 
@@ -347,9 +345,9 @@ servers.
 
 ### Examples
 
-    pwsh delphi-toolchain-inspect.ps1 -DetectInstalled -Platform Win32 -BuildSystem DCC
-    pwsh delphi-toolchain-inspect.ps1 -DetectInstalled -Platform Win64 -BuildSystem MSBuild
-    pwsh delphi-toolchain-inspect.ps1 -DetectInstalled -Platform Win32 -BuildSystem DCC -Format json
+    pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC
+    pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win64 -BuildSystem MSBuild
+    pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Format json
 
 ### Output (text format, default)
 
@@ -393,7 +391,7 @@ the requested platform or build system combination.
 
     {
       "ok": true,
-      "command": "detectInstalled",
+      "command": "listInstalled",
       "tool": {
         "name": "delphi-toolchain-inspect",
         "impl": "pwsh",
@@ -475,7 +473,7 @@ If omitted, the default submodule dataset path is used.
 If the file does not exist or cannot be parsed, the tool exits with
 code 3.
 
-Note: `-DetectInstalled` uses the dataset to drive the list of versions
+Note: `-ListInstalled` uses the dataset to drive the list of versions
 to scan for.  Supplying a custom `-DataFile` will limit detection to
 the versions present in that file.
 
@@ -483,12 +481,12 @@ the versions present in that file.
 
 # Parameter Rules
 
--   `-Version`, `-Resolve`, `-ListKnown`, and `-DetectInstalled` are
+-   `-Version`, `-Resolve`, `-ListKnown`, and `-ListInstalled` are
     mutually exclusive (enforced by PowerShell parameter sets; exit
     code 1 if more than one is supplied).
 -   With no action switch, the default action is `-Version`.
 -   `-Resolve` requires `-Name`; it may be supplied positionally.
--   `-DetectInstalled` requires both `-Platform` and `-BuildSystem`;
+-   `-ListInstalled` requires both `-Platform` and `-BuildSystem`;
     neither may be supplied positionally.
 -   `-Format` applies to all actions.
 -   Parameter binding errors are handled by PowerShell (exit code 1).
@@ -504,8 +502,8 @@ the versions present in that file.
 | `2` | Reserved (script-body argument validation; not currently used) |
 | `3` | Dataset missing or unreadable |
 | `4` | Alias not found (`-Resolve` only) |
-| `5` | Registry access error (`-DetectInstalled` only) |
-| `6` | No installations found (`-DetectInstalled` only) |
+| `5` | Registry access error (`-ListInstalled` only) |
+| `6` | No installations found (`-ListInstalled` only) |
 
 
 **PowerShell implementation note:** the PowerShell binder runs before the
@@ -558,7 +556,7 @@ JSON error envelope:
 
     {
       "ok": false,
-      "command": "detectInstalled",
+      "command": "listInstalled",
       "tool": { ... },
       "error": {
         "code": 5,

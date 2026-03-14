@@ -1,5 +1,5 @@
 # detect-registry-error-shim.ps1
-# Test shim: injects a registry access failure into the -DetectInstalled path.
+# Test shim: injects a registry access failure into the -ListInstalled path.
 #
 # Dot-sources delphi-toolchain-inspect.ps1 to import all functions and exit-code
 # constants (the dot-source guard fires so only the pre-guard definitions load),
@@ -58,7 +58,7 @@ try {
   $data = Import-JsonData -Path $DataFile
 } catch {
   if ($Format -eq 'json') {
-    Write-JsonError -ToolVersion $ToolVersion -Command 'detectInstalled' -Code $ExitDatasetError -Message $_.Exception.Message
+    Write-JsonError -ToolVersion $ToolVersion -Command 'listInstalled' -Code $ExitDatasetError -Message $_.Exception.Message
   } else {
     Write-Error $_.Exception.Message -ErrorAction Continue
   }
@@ -77,7 +77,7 @@ try {
   })
 } catch {
   if ($Format -eq 'json') {
-    Write-JsonError -ToolVersion $ToolVersion -Command 'detectInstalled' -Code $ExitRegistryError -Message "Registry access failed: $($_.Exception.Message)"
+    Write-JsonError -ToolVersion $ToolVersion -Command 'listInstalled' -Code $ExitRegistryError -Message "Registry access failed: $($_.Exception.Message)"
   } else {
     Write-Error "Registry access failed: $($_.Exception.Message)" -ErrorAction Continue
   }

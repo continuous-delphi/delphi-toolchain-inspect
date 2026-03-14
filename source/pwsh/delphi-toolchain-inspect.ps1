@@ -43,14 +43,14 @@ param(
   [Parameter(ParameterSetName='ListKnown')]
   [switch]$ListKnown,
 
-  [Parameter(ParameterSetName='DetectInstalled', Mandatory=$true)]
-  [switch]$DetectInstalled,
+  [Parameter(ParameterSetName='ListInstalled', Mandatory=$true)]
+  [switch]$ListInstalled,
 
-  [Parameter(ParameterSetName='DetectInstalled', Mandatory=$true)]
+  [Parameter(ParameterSetName='ListInstalled', Mandatory=$true)]
   [ValidateSet('Win32', 'Win64')]
   [string]$Platform,
 
-  [Parameter(ParameterSetName='DetectInstalled', Mandatory=$true)]
+  [Parameter(ParameterSetName='ListInstalled', Mandatory=$true)]
   [ValidateSet('DCC', 'MSBuild')]
   [string]$BuildSystem,
 
@@ -74,8 +74,8 @@ $ExitUnexpectedError      = 1   # unhandled exception or PS binder failure
 $ExitInvalidArguments     = 2   # reserved; not currently used
 $ExitDatasetError         = 3   # data file missing or unparseable
 $ExitAliasNotFound        = 4   # -Resolve name not in dataset
-$ExitRegistryError        = 5   # -DetectInstalled registry access failure
-$ExitNoInstallationsFound = 6   # -DetectInstalled: no ready/partial entries
+$ExitRegistryError        = 5   # -ListInstalled registry access failure
+$ExitNoInstallationsFound = 6   # -ListInstalled: no ready/partial entries
 
 function Resolve-DefaultDataFilePath {
   param([string]$ScriptPath)
@@ -452,7 +452,7 @@ function Get-MSBuildReadiness {
   return $result
 }
 
-function Write-DetectInstalledOutput {
+function Write-ListInstalledOutput {
   param(
     [object[]]$Installations,
     [string]$Platform,
@@ -489,7 +489,7 @@ function Write-DetectInstalledOutput {
     })
     Write-JsonOutput ([pscustomobject]@{
       ok      = $true
-      command = 'detectInstalled'
+      command = 'listInstalled'
       tool    = [pscustomobject]@{ name = 'delphi-toolchain-inspect'; impl = 'pwsh'; version = $ToolVersion }
       result  = [pscustomobject]@{
         platform      = $Platform
@@ -544,8 +544,8 @@ try {
   # Default behavior: if no action switches specified, treat as -Version.
   # Mutual exclusion and mandatory -Name are enforced by parameter sets.
   $doVersion = $Version
-  if (-not $doVersion -and -not $Resolve -and -not $ListKnown -and -not $DetectInstalled) { $doVersion = $true }
-  $commandName = if ($Resolve) { 'resolve' } elseif ($ListKnown) { 'listKnown' } elseif ($DetectInstalled) { 'detectInstalled' } else { 'version' }
+  if (-not $doVersion -and -not $Resolve -and -not $ListKnown -and -not $ListInstalled) { $doVersion = $true }
+  $commandName = if ($Resolve) { 'resolve' } elseif ($ListKnown) { 'listKnown' } elseif ($ListInstalled) { 'listInstalled' } else { 'version' }
 
   if ([string]::IsNullOrWhiteSpace($DataFile)) {
     $DataFile = Resolve-DefaultDataFilePath -ScriptPath $scriptPath
@@ -576,9 +576,9 @@ try {
     $entry = Resolve-VersionEntry -Name $Name -Data $data
     if ($null -eq $entry) {
       if ($Format -eq 'json') {
-        Write-JsonError -ToolVersion $ToolVersion -Command 'resolve' -Code $ExitAliasNotFound -Message "Name not found: $Name"
+        Write-JsonError -ToolVersion $ToolVersion -Command 'resolve' -Code $ExitAliasNotFound -Message "Alias not found: $Name"
       } else {
-        Write-Error "Name not found: $Name" -ErrorAction Continue
+        Write-Error "Alias not found: $Name" -ErrorAction Continue
       }
       exit $ExitAliasNotFound
     }
@@ -591,7 +591,7 @@ try {
     exit $ExitSuccess
   }
 
-  if ($DetectInstalled) {
+  if ($ListInstalled) {
     $installations = $null
     try {
       $installations = @($data.versions | ForEach-Object {
@@ -603,7 +603,7 @@ try {
       })
     } catch {
       if ($Format -eq 'json') {
-        Write-JsonError -ToolVersion $ToolVersion -Command 'detectInstalled' -Code $ExitRegistryError -Message "Registry access failed: $($_.Exception.Message)"
+        Write-JsonError -ToolVersion $ToolVersion -Command 'listInstalled' -Code $ExitRegistryError -Message "Registry access failed: $($_.Exception.Message)"
       } else {
         Write-Error "Registry access failed: $($_.Exception.Message)" -ErrorAction Continue
       }
@@ -611,7 +611,7 @@ try {
     }
     # @() forces empty array -- Where-Object returns $null under StrictMode when no matches
     $anyFound = @($installations | Where-Object { $_.readiness -in @('ready', 'partialInstall') }).Count -gt 0
-    Write-DetectInstalledOutput -Installations $installations -Platform $Platform -BuildSystem $BuildSystem -ToolVersion $ToolVersion -Format $Format
+    Write-ListInstalledOutput -Installations $installations -Platform $Platform -BuildSystem $BuildSystem -ToolVersion $ToolVersion -Format $Format
     if (-not $anyFound) { exit $ExitNoInstallationsFound }
     exit $ExitSuccess
   }
