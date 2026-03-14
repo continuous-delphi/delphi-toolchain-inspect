@@ -167,6 +167,10 @@ Describe 'Get-MSBuildReadiness' {
       $script:result.rootDir | Should -Be 'C:\Fake\Delphi13'
     }
 
+    It 'rsvarsPath is the bin\rsvars.bat path under rootDir' {
+      $script:result.rsvarsPath | Should -Be 'C:\Fake\Delphi13\bin\rsvars.bat'
+    }
+
     It 'rootDirExists is true' {
       $script:result.rootDirExists | Should -Be $true
     }
@@ -206,6 +210,10 @@ Describe 'Get-MSBuildReadiness' {
 
     It 'rootDir is the value returned by Get-RegistryRootDir' {
       $script:result.rootDir | Should -Be 'C:\Fake\Delphi13'
+    }
+
+    It 'rsvarsPath is the bin\rsvars.bat path under rootDir' {
+      $script:result.rsvarsPath | Should -Be 'C:\Fake\Delphi13\bin\rsvars.bat'
     }
 
     It 'rootDirExists is false' {
