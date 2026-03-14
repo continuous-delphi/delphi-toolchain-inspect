@@ -23,11 +23,9 @@ jobs:
           submodules: recursive
 
       - name: Install Pester and PSScriptAnalyzer
-        shell: pwsh
         run: |
-          Install-Module -Name Pester -MinimumVersion 5.7.0 -Force -SkipPublisherCheck -Scope CurrentUser
-          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+          pwsh -Command "Install-Module Pester -MinimumVersion 5.7.0 -Force -Scope CurrentUser"
+          pwsh -Command "Install-Module PSScriptAnalyzer -Force -Scope CurrentUser"
 
       - name: Run PowerShell test suite
-        shell: pwsh
-        run: ./tests/run-tests.ps1
+        run: pwsh tests/run-tests.ps1
