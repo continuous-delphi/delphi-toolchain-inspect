@@ -48,6 +48,7 @@ Describe 'Write-ListInstalledOutput' {
       productName   = 'Delphi 7'
       readiness     = 'ready'
       registryFound = $true
+      rootDir       = 'C:\Fake\Delphi7'
       rootDirExists = $true
       compilerFound = $true
       cfgFound      = $true
@@ -58,6 +59,7 @@ Describe 'Write-ListInstalledOutput' {
       productName   = 'Delphi 13 Florence'
       readiness     = 'partialInstall'
       registryFound = $true
+      rootDir       = 'C:\Fake\Delphi13'
       rootDirExists = $true
       compilerFound = $false
       cfgFound      = $true
@@ -68,6 +70,7 @@ Describe 'Write-ListInstalledOutput' {
       productName   = 'Delphi Ghost'
       readiness     = 'notFound'
       registryFound = $false
+      rootDir       = $null
       rootDirExists = $null
       compilerFound = $null
       cfgFound      = $null
@@ -78,6 +81,7 @@ Describe 'Write-ListInstalledOutput' {
       productName   = 'Delphi Synthetic'
       readiness     = 'notApplicable'
       registryFound = $null
+      rootDir       = $null
       rootDirExists = $null
       compilerFound = $null
       cfgFound      = $null
@@ -90,6 +94,7 @@ Describe 'Write-ListInstalledOutput' {
       productName              = 'Delphi 13 Florence'
       readiness                = 'ready'
       registryFound            = $true
+      rootDir                  = 'C:\Fake\Delphi13'
       rootDirExists            = $true
       rsvarsFound              = $true
       envOptionsFound          = $true
@@ -101,6 +106,7 @@ Describe 'Write-ListInstalledOutput' {
       productName              = 'Delphi 13 Florence'
       readiness                = 'partialInstall'
       registryFound            = $true
+      rootDir                  = 'C:\Fake\Delphi13'
       rootDirExists            = $true
       rsvarsFound              = $true
       envOptionsFound          = $false
@@ -112,6 +118,7 @@ Describe 'Write-ListInstalledOutput' {
       productName              = 'Delphi Synthetic'
       readiness                = 'notFound'
       registryFound            = $false
+      rootDir                  = $null
       rootDirExists            = $null
       rsvarsFound              = $null
       envOptionsFound          = $null
@@ -123,6 +130,7 @@ Describe 'Write-ListInstalledOutput' {
       productName              = 'Delphi 7'
       readiness                = 'notApplicable'
       registryFound            = $null
+      rootDir                  = $null
       rootDirExists            = $null
       rsvarsFound              = $null
       envOptionsFound          = $null
@@ -308,16 +316,23 @@ Describe 'Write-ListInstalledOutput' {
       $entry.compilerFound | Should -Be $true
     }
 
-    It 'notApplicable entry has registryFound=null' {
+    It 'ready entry has rootDir field' {
+      $entry = @($script:json.result.installations | Where-Object { $_.readiness -eq 'ready' })[0]
+      $entry.rootDir | Should -Be 'C:\Fake\Delphi7'
+    }
+
+    It 'notApplicable entry has registryFound=null and rootDir=null' {
       $entry = @($script:json.result.installations | Where-Object { $_.readiness -eq 'notApplicable' })[0]
       $entry | Should -Not -BeNull
       $entry.registryFound | Should -BeNull
+      $entry.rootDir       | Should -BeNull
     }
 
-    It 'notFound entry has registryFound=false' {
+    It 'notFound entry has registryFound=false and rootDir=null' {
       $entry = @($script:json.result.installations | Where-Object { $_.readiness -eq 'notFound' })[0]
       $entry | Should -Not -BeNull
       $entry.registryFound | Should -Be $false
+      $entry.rootDir       | Should -BeNull
     }
 
   }
@@ -334,6 +349,11 @@ Describe 'Write-ListInstalledOutput' {
 
     It 'result.buildSystem is MSBuild' {
       $script:json.result.buildSystem | Should -Be 'MSBuild'
+    }
+
+    It 'ready MSBuild entry has rootDir field' {
+      $entry = @($script:json.result.installations | Where-Object { $_.readiness -eq 'ready' })[0]
+      $entry.rootDir | Should -Be 'C:\Fake\Delphi13'
     }
 
     It 'ready MSBuild entry has rsvarsFound field' {

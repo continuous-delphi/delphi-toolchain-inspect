@@ -485,6 +485,7 @@ function Write-ListInstalledOutput {
           productName   = $inst.productName
           readiness     = $inst.readiness
           registryFound = $inst.registryFound
+          rootDir       = $inst.rootDir
           rootDirExists = $inst.rootDirExists
           compilerFound = $inst.compilerFound
           cfgFound      = $inst.cfgFound
@@ -495,6 +496,7 @@ function Write-ListInstalledOutput {
           productName              = $inst.productName
           readiness                = $inst.readiness
           registryFound            = $inst.registryFound
+          rootDir                  = $inst.rootDir
           rootDirExists            = $inst.rootDirExists
           rsvarsFound              = $inst.rsvarsFound
           envOptionsFound          = $inst.envOptionsFound
