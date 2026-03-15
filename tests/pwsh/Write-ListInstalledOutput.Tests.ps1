@@ -142,13 +142,14 @@ Describe 'Write-ListInstalledOutput' {
     }
   }
 
-  Context 'Text, DCC, all entries notFound or notApplicable' {
+  Context 'Text, DCC, empty Installations array' {
 
     BeforeAll {
       $script:out = Write-ListInstalledOutput `
-        -Installations @($script:notFoundDcc, $script:notApplicableDcc) `
+        -Installations @() `
         -Platform 'Win32' -BuildSystem 'DCC' `
-        -ToolVersion $script:toolVersion
+        -ToolVersion $script:toolVersion `
+        -Format 'text'
     }
 
     It 'emits exactly one line' {
@@ -167,7 +168,8 @@ Describe 'Write-ListInstalledOutput' {
       $script:out = Write-ListInstalledOutput `
         -Installations @($script:readyDcc) `
         -Platform 'Win32' -BuildSystem 'DCC' `
-        -ToolVersion $script:toolVersion
+        -ToolVersion $script:toolVersion `
+        -Format 'text'
     }
 
     It 'first line contains verDefine and productName' {
@@ -210,7 +212,8 @@ Describe 'Write-ListInstalledOutput' {
       $script:out = Write-ListInstalledOutput `
         -Installations @($script:readyDcc, $script:partialDcc) `
         -Platform 'Win32' -BuildSystem 'DCC' `
-        -ToolVersion $script:toolVersion
+        -ToolVersion $script:toolVersion `
+        -Format 'text'
     }
 
     It 'blank separator line is positioned between the two header lines' {
@@ -225,25 +228,26 @@ Describe 'Write-ListInstalledOutput' {
 
   }
 
-  Context 'Text, DCC, notFound and notApplicable entries suppressed' {
+  Context 'Text, DCC, all received entries emitted (no internal filter)' {
 
     BeforeAll {
       $script:out = Write-ListInstalledOutput `
         -Installations @($script:notFoundDcc, $script:readyDcc, $script:notApplicableDcc) `
         -Platform 'Win32' -BuildSystem 'DCC' `
-        -ToolVersion $script:toolVersion
+        -ToolVersion $script:toolVersion `
+        -Format 'text'
     }
 
     It 'ready entry VER150 appears in output' {
       ($script:out -match 'VER150') | Should -Not -BeNullOrEmpty
     }
 
-    It 'notFound entry VER000 does not appear in output' {
-      ($script:out -match 'VER000') | Should -BeNullOrEmpty
+    It 'notFound entry VER000 also appears in output (no internal filter)' {
+      ($script:out -match 'VER000') | Should -Not -BeNullOrEmpty
     }
 
-    It 'notApplicable entry VER999 does not appear in output' {
-      ($script:out -match 'VER999') | Should -BeNullOrEmpty
+    It 'notApplicable entry VER999 also appears in output (no internal filter)' {
+      ($script:out -match 'VER999') | Should -Not -BeNullOrEmpty
     }
 
   }
@@ -254,7 +258,8 @@ Describe 'Write-ListInstalledOutput' {
       $script:out = Write-ListInstalledOutput `
         -Installations @($script:partialMSBuildNoEnvOpts) `
         -Platform 'Win32' -BuildSystem 'MSBuild' `
-        -ToolVersion $script:toolVersion
+        -ToolVersion $script:toolVersion `
+        -Format 'text'
     }
 
     It 'includes a rsvarsFound line' {
@@ -383,6 +388,48 @@ Describe 'Write-ListInstalledOutput' {
     It 'notApplicable MSBuild entry has registryFound=null' {
       $entry = @($script:json.result.installations | Where-Object { $_.readiness -eq 'notApplicable' })[0]
       $entry.registryFound | Should -BeNull
+    }
+
+  }
+
+  Context 'Object format (default), emits all received entries as objects (no internal filter)' {
+
+    BeforeAll {
+      $script:objOut = @(Write-ListInstalledOutput `
+        -Installations @($script:readyDcc, $script:notFoundDcc, $script:notApplicableDcc) `
+        -Platform 'Win32' -BuildSystem 'DCC' `
+        -ToolVersion $script:toolVersion)
+    }
+
+    It 'emits all three received entries' {
+      $script:objOut | Should -HaveCount 3
+    }
+
+    It 'each entry is the original pscustomobject (passthrough)' {
+      $script:objOut[0].verDefine | Should -Be 'VER150'
+      $script:objOut[1].verDefine | Should -Be 'VER000'
+      $script:objOut[2].verDefine | Should -Be 'VER999'
+    }
+
+    It 'readiness values are preserved on emitted objects' {
+      $script:objOut[0].readiness | Should -Be 'ready'
+      $script:objOut[1].readiness | Should -Be 'notFound'
+      $script:objOut[2].readiness | Should -Be 'notApplicable'
+    }
+
+  }
+
+  Context 'Object format (default), emits nothing when Installations is empty' {
+
+    BeforeAll {
+      $script:objOut = @(Write-ListInstalledOutput `
+        -Installations @() `
+        -Platform 'Win32' -BuildSystem 'DCC' `
+        -ToolVersion $script:toolVersion)
+    }
+
+    It 'emits nothing (empty pipeline)' {
+      $script:objOut | Should -HaveCount 0
     }
 
   }

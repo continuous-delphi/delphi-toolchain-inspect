@@ -17,6 +17,9 @@ USAGE
   pwsh ./source/delphi-toolchain-inspect.ps1 -DataFile <path>
   pwsh ./source/delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win32 -BuildSystem DCC
   pwsh ./source/delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win32 -BuildSystem DCC -Format json
+  pwsh ./source/delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC
+  pwsh ./source/delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all
+  pwsh ./source/delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness partialInstall
 
 NOTES
   Default behavior is equivalent to -Version.
@@ -29,10 +32,15 @@ NOTES
   entry whose readiness is 'ready' for the specified platform and build system.
   Exit 0 on success; exit 6 when no ready installation exists.
 
-  -Format selects output format: text (default, human-readable) or json
-  (machine envelope with ok/command/tool/result structure).  Error envelopes
-  substitute result with error: { code, message }.  Unknown format values are
-  rejected by the parameter binder (ValidateSet).
+  -Format selects output format.  Valid values: object (default), text, json.
+    object -- emit PowerShell objects to the pipeline (default; best for scripting)
+    text   -- human-readable formatted output
+    json   -- machine envelope with ok/command/tool/result structure
+  Error envelopes substitute result with error: { code, message }.  Unknown format
+  values are rejected by the parameter binder (ValidateSet).
+
+  -Readiness (ListInstalled only) filters results by readiness state.
+  Default is @('ready').  Use -Readiness all to include all states.
 #>
 
 [CmdletBinding(DefaultParameterSetName='Version')]
@@ -65,12 +73,16 @@ param(
   [ValidateSet('DCC', 'MSBuild')]
   [string]$BuildSystem = 'MSBuild',
 
+  [Parameter(ParameterSetName='ListInstalled')]
+  [ValidateSet('ready', 'partialInstall', 'notFound', 'notApplicable', 'all')]
+  [string[]]$Readiness = @('ready'),
+
   [Parameter()]
   [string]$DataFile,
 
   [Parameter()]
-  [ValidateSet('text', 'json')]
-  [string]$Format = 'text'
+  [ValidateSet('text', 'json', 'object')]
+  [string]$Format = 'object'
 )
 
 Set-StrictMode -Version Latest
@@ -153,7 +165,7 @@ function Write-VersionInfo {
   param(
     [string]$ToolVersion,
     [psobject]$Data,
-    [string]$Format = 'text'
+    [string]$Format = 'object'
   )
 
   $schemaVersion = $Data.schemaVersion
@@ -163,6 +175,15 @@ function Write-VersionInfo {
   $generated = $null
   if ($null -ne $Data.meta -and $null -ne $Data.meta.generatedUtcDate) {
     $generated = $Data.meta.generatedUtcDate
+  }
+
+  if ($Format -eq 'object') {
+    Write-Output ([pscustomobject]@{
+      schemaVersion    = $schemaVersion
+      dataVersion      = $dataVersion
+      generatedUtcDate = $generated
+    })
+    return
   }
 
   if ($Format -eq 'json') {
@@ -220,8 +241,20 @@ function Write-ResolveOutput {
   param(
     [psobject]$Entry,
     [string]$ToolVersion = '',
-    [string]$Format = 'text'
+    [string]$Format = 'object'
   )
+
+  if ($Format -eq 'object') {
+    Write-Output ([pscustomobject]@{
+      verDefine          = $Entry.verDefine
+      productName        = $Entry.productName
+      compilerVersion    = $Entry.compilerVersion
+      packageVersion     = $Entry.packageVersion
+      regKeyRelativePath = $Entry.regKeyRelativePath
+      aliases            = $Entry.aliases
+    })
+    return
+  }
 
   if ($Format -eq 'json') {
     Write-JsonOutput ([pscustomobject]@{
@@ -259,8 +292,23 @@ function Write-ListKnownOutput {
   param(
     [psobject]$Data,
     [string]$ToolVersion = '',
-    [string]$Format = 'text'
+    [string]$Format = 'object'
   )
+
+  if ($Format -eq 'object') {
+    foreach ($entry in $Data.versions) {
+      Write-Output ([pscustomobject]@{
+        verDefine          = $entry.verDefine
+        productName        = $entry.productName
+        compilerVersion    = $entry.compilerVersion
+        packageVersion     = $entry.packageVersion
+        regKeyRelativePath = $entry.regKeyRelativePath
+        aliases            = $entry.aliases
+        notes              = $entry.notes
+      })
+    }
+    return
+  }
 
   if ($Format -eq 'json') {
     $versions = @($Data.versions | ForEach-Object {
@@ -475,8 +523,13 @@ function Write-ListInstalledOutput {
     [string]$Platform,
     [string]$BuildSystem,
     [string]$ToolVersion = '',
-    [string]$Format = 'text'
+    [string]$Format = 'object'
   )
+
+  if ($Format -eq 'object') {
+    foreach ($inst in $Installations) { Write-Output $inst }
+    return
+  }
 
   if ($Format -eq 'json') {
     $items = @($Installations | ForEach-Object {
@@ -520,30 +573,35 @@ function Write-ListInstalledOutput {
     return
   }
 
-  # Text format: only show detected installations (readiness != notFound)
-  # @() forces empty array -- Where-Object returns $null under StrictMode when no matches
-  $found = @($Installations | Where-Object { $_.readiness -in @('ready', 'partialInstall') })
-  if ($found.Count -eq 0) {
+  # Text format: emit everything received (filtering is done by the caller via -Readiness)
+  # @() ensures Count is available even when $Installations binds as $null under StrictMode
+  if (@($Installations).Count -eq 0) {
     Write-Output 'No installations found'
     return
   }
 
   $firstBlock = $true
-  foreach ($inst in $found) {
+  foreach ($inst in $Installations) {
     if (-not $firstBlock) { Write-Output '' }
     $firstBlock = $false
 
+    $regFoundStr    = if ($null -ne $inst.registryFound)  { $inst.registryFound.ToString().ToLower()  } else { 'null' }
+    $rootExistsStr  = if ($null -ne $inst.rootDirExists)   { $inst.rootDirExists.ToString().ToLower()   } else { 'null' }
     Write-Output ("{0,-10} {1}" -f $inst.verDefine, $inst.productName)
     Write-Output ("  {0,-26}{1}" -f 'readiness', $inst.readiness)
-    Write-Output ("  {0,-26}{1}" -f 'registryFound', $inst.registryFound.ToString().ToLower())
-    Write-Output ("  {0,-26}{1}" -f 'rootDirExists', $inst.rootDirExists.ToString().ToLower())
+    Write-Output ("  {0,-26}{1}" -f 'registryFound', $regFoundStr)
+    Write-Output ("  {0,-26}{1}" -f 'rootDirExists', $rootExistsStr)
     if ($BuildSystem -eq 'DCC') {
-      Write-Output ("  {0,-26}{1}" -f 'compilerFound', $inst.compilerFound.ToString().ToLower())
-      Write-Output ("  {0,-26}{1}" -f 'cfgFound', $inst.cfgFound.ToString().ToLower())
+      $compFoundStr = if ($null -ne $inst.compilerFound) { $inst.compilerFound.ToString().ToLower() } else { 'null' }
+      $cfgFoundStr  = if ($null -ne $inst.cfgFound)      { $inst.cfgFound.ToString().ToLower()      } else { 'null' }
+      Write-Output ("  {0,-26}{1}" -f 'compilerFound', $compFoundStr)
+      Write-Output ("  {0,-26}{1}" -f 'cfgFound', $cfgFoundStr)
     } else {
-      Write-Output ("  {0,-26}{1}" -f 'rsvarsFound', $inst.rsvarsFound.ToString().ToLower())
-      Write-Output ("  {0,-26}{1}" -f 'envOptionsFound', $inst.envOptionsFound.ToString().ToLower())
-      $hasLibStr = if ($null -ne $inst.envOptionsHasLibraryPath) { $inst.envOptionsHasLibraryPath.ToString().ToLower() } else { 'null' }
+      $rsvFoundStr   = if ($null -ne $inst.rsvarsFound)              { $inst.rsvarsFound.ToString().ToLower()              } else { 'null' }
+      $envOptFoundStr = if ($null -ne $inst.envOptionsFound)          { $inst.envOptionsFound.ToString().ToLower()          } else { 'null' }
+      $hasLibStr      = if ($null -ne $inst.envOptionsHasLibraryPath) { $inst.envOptionsHasLibraryPath.ToString().ToLower() } else { 'null' }
+      Write-Output ("  {0,-26}{1}" -f 'rsvarsFound', $rsvFoundStr)
+      Write-Output ("  {0,-26}{1}" -f 'envOptionsFound', $envOptFoundStr)
       Write-Output ("  {0,-26}{1}" -f 'envOptionsHasLibraryPath', $hasLibStr)
     }
   }
@@ -555,8 +613,13 @@ function Write-DetectLatestOutput {
     [string]$Platform,
     [string]$BuildSystem,
     [string]$ToolVersion = '',
-    [string]$Format = 'text'
+    [string]$Format = 'object'
   )
+
+  if ($Format -eq 'object') {
+    if ($null -ne $Installation) { Write-Output $Installation }
+    return
+  }
 
   if ($Format -eq 'json') {
     $instObj = $null
@@ -702,10 +765,13 @@ try {
       }
       exit $ExitRegistryError
     }
-    # @() forces empty array -- Where-Object returns $null under StrictMode when no matches
-    $anyFound = @($installations | Where-Object { $_.readiness -in @('ready', 'partialInstall') }).Count -gt 0
-    Write-ListInstalledOutput -Installations $installations -Platform $Platform -BuildSystem $BuildSystem -ToolVersion $ToolVersion -Format $Format
-    if (-not $anyFound) { exit $ExitNoInstallationsFound }
+    if ('all' -in $Readiness) {
+      $filtered = @($installations)
+    } else {
+      $filtered = @($installations | Where-Object { $_.readiness -in $Readiness })
+    }
+    Write-ListInstalledOutput -Installations $filtered -Platform $Platform -BuildSystem $BuildSystem -ToolVersion $ToolVersion -Format $Format
+    if ($filtered.Count -eq 0) { exit $ExitNoInstallationsFound }
     exit $ExitSuccess
   }
 

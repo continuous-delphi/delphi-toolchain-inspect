@@ -60,7 +60,7 @@ Describe 'Write-VersionInfo' {
         dataVersion   = '0.1.0'
         meta          = [pscustomobject]@{ generatedUtcDate = '2026-01-01' }
       }
-      $script:output = Write-VersionInfo -ToolVersion '0.1.0' -Data $script:data
+      $script:output = Write-VersionInfo -ToolVersion '0.1.0' -Data $script:data -Format 'text'
     }
 
     # Exact match: this line is the format contract for the tool header.
@@ -96,7 +96,7 @@ Describe 'Write-VersionInfo' {
         dataVersion   = '0.1.0'
         meta          = $null
       }
-      $script:output = Write-VersionInfo -ToolVersion '0.1.0' -Data $script:data
+      $script:output = Write-VersionInfo -ToolVersion '0.1.0' -Data $script:data -Format 'text'
     }
 
     It 'output has exactly three lines' {
@@ -117,7 +117,7 @@ Describe 'Write-VersionInfo' {
         dataVersion   = '0.1.0'
         meta          = [pscustomobject]@{ generatedUtcDate = '' }
       }
-      $script:output = Write-VersionInfo -ToolVersion '0.1.0' -Data $script:data
+      $script:output = Write-VersionInfo -ToolVersion '0.1.0' -Data $script:data -Format 'text'
     }
 
     It 'output has exactly three lines' {
@@ -138,7 +138,7 @@ Describe 'Write-VersionInfo' {
         dataVersion   = '0.1.0'
         meta          = [pscustomobject]@{ generatedUtcDate = '   ' }
       }
-      $script:output = Write-VersionInfo -ToolVersion '0.1.0' -Data $script:data
+      $script:output = Write-VersionInfo -ToolVersion '0.1.0' -Data $script:data -Format 'text'
     }
 
     It 'output has exactly three lines' {
@@ -159,7 +159,7 @@ Describe 'Write-VersionInfo' {
         dataVersion   = '0.1.0'
         meta          = [pscustomobject]@{ generatedUtcDate = $null }
       }
-      $script:output = Write-VersionInfo -ToolVersion '0.1.0' -Data $script:data
+      $script:output = Write-VersionInfo -ToolVersion '0.1.0' -Data $script:data -Format 'text'
     }
 
     It 'output has exactly three lines' {
@@ -232,6 +232,43 @@ Describe 'Write-VersionInfo' {
 
     It 'result.generatedUtcDate is null' {
       $script:json.result.generatedUtcDate | Should -Be $null
+    }
+
+  }
+
+  Context 'Given object format (default) and all fields populated' {
+
+    BeforeAll {
+      $script:data = [pscustomobject]@{
+        schemaVersion = '1.0.0'
+        dataVersion   = '0.1.0'
+        meta          = [pscustomobject]@{ generatedUtcDate = '2026-01-01' }
+      }
+      $script:output = Write-VersionInfo -ToolVersion '0.1.0' -Data $script:data
+    }
+
+    It 'emits one pscustomobject' {
+      $script:output | Should -HaveCount 1
+    }
+
+    It 'emitted value is a pscustomobject' {
+      $script:output | Should -BeOfType [pscustomobject]
+    }
+
+    It 'has schemaVersion property with correct value' {
+      $script:output.schemaVersion | Should -Be '1.0.0'
+    }
+
+    It 'has dataVersion property with correct value' {
+      $script:output.dataVersion | Should -Be '0.1.0'
+    }
+
+    It 'has generatedUtcDate property with correct value' {
+      $script:output.generatedUtcDate | Should -Be '2026-01-01'
+    }
+
+    It 'does not have a toolVersion property' {
+      $script:output.PSObject.Properties['toolVersion'] | Should -BeNullOrEmpty
     }
 
   }

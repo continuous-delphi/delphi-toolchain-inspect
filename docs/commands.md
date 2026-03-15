@@ -38,8 +38,20 @@ Display tool version and dataset metadata.
     pwsh delphi-toolchain-inspect.ps1
     pwsh delphi-toolchain-inspect.ps1 -Version
     pwsh delphi-toolchain-inspect.ps1 -Version -Format json
+    $v = pwsh delphi-toolchain-inspect.ps1 -Version
 
-### Output (text format, default)
+### Output (object format, default)
+
+Returns one `pscustomobject` with properties:
+
+    schemaVersion    -- dataset schema version string
+    dataVersion      -- dataset data version string
+    generatedUtcDate -- dataset generation date (null if absent from dataset)
+
+Note: `toolVersion` is intentionally omitted from the object.  The caller
+already knows which script they invoked.
+
+### Output (text format)
 
 Labels are left-padded to a fixed column width.
 
@@ -95,7 +107,14 @@ wins.
     pwsh delphi-toolchain-inspect.ps1 -Resolve -Name VER150
     pwsh delphi-toolchain-inspect.ps1 -Resolve VER350 -Format json
 
-### Output (text format, default)
+### Output (object format, default)
+
+Returns one `pscustomobject` with properties: `verDefine`, `productName`,
+`compilerVersion`, `packageVersion`, `regKeyRelativePath`, `aliases`.
+All fields are always present; optional dataset fields appear as `null`
+when absent.
+
+### Output (text format)
 
 Labels are left-padded to a 20-character column width.  Optional fields
 that are null or empty in the dataset are omitted.
@@ -143,7 +162,14 @@ List all known Delphi versions from the dataset.
     pwsh delphi-toolchain-inspect.ps1 -ListKnown -Format json
     pwsh delphi-toolchain-inspect.ps1 -ListKnown -DataFile ./data/custom.json
 
-### Output (text format, default)
+### Output (object format, default)
+
+Returns one `pscustomobject` per version entry.  Fields: `verDefine`,
+`productName`, `compilerVersion`, `packageVersion`, `regKeyRelativePath`,
+`aliases`, `notes`.  PowerShell collects the stream as an array when
+assigned: `$all = .\tool.ps1 -ListKnown`.
+
+### Output (text format)
 
 One line per entry in fixed-width columns: verDefine (12), compilerVersion (10),
 packageVersion (6), productName (trailing).
@@ -239,6 +265,21 @@ The target compilation platform to assess.
 Valid values: `DCC`, `MSBuild`
 
 The build system to assess readiness for.
+
+`-Readiness` (optional, default: `@('ready')`)
+
+Valid values: `ready`, `partialInstall`, `notFound`, `notApplicable`, `all`
+
+Filters the output to entries matching the specified readiness state(s).
+Multiple values may be specified as an array.  The special value `all`
+bypasses filtering entirely and returns every entry regardless of state.
+
+Default is `@('ready')`, meaning only fully ready installations are
+returned.  Exit code 6 fires when the filtered list is empty.
+
+**Behavior change vs prior releases:** Previous releases always returned
+all entries in JSON format regardless of state.  If you relied on that
+behavior, add `-Readiness all` to restore it.
 
 - `DCC` -- direct invocation of the command-line compiler
   (`dcc32.exe` or `dcc64.exe` depending on platform).  Requires the
@@ -350,17 +391,30 @@ servers.
     pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC
     pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win64 -BuildSystem MSBuild
     pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Format json
+    pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all
+    pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness ready,partialInstall
+    pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all -Format json
+    $inst = pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all
 
-### Output (text format, default)
+### Output (object format, default)
 
-Only entries with readiness `ready` or `partialInstall` are listed,
-in dataset order.  Entries with readiness `notFound` or `notApplicable`
-are silently omitted.  If no entries remain after filtering, a single
-line is emitted:
+Returns one object per entry that passes the `-Readiness` filter.
+The objects are the internal readiness result objects emitted directly.
+PowerShell collects them as an array when assigned:
+
+    $inst = .\tool.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all
+
+When the filtered list is empty, exit code 6 is returned and nothing is
+emitted to the pipeline.
+
+### Output (text format)
+
+Only entries passing the `-Readiness` filter are listed, in dataset order.
+If no entries remain after filtering, a single line is emitted:
 
     No installations found
 
-Otherwise, one block per detected installation:
+Otherwise, one block per entry that passed the `-Readiness` filter:
 
     VER340     Delphi 10.4 Sydney
       readiness                 ready
@@ -376,20 +430,23 @@ Otherwise, one block per detected installation:
       compilerFound             true
       cfgFound                  false
 
-Versions with no registry entry are silently omitted from text output.
-Use `-Format json` to see all known versions including those not found.
+Use `-Readiness all` to include all entries.  Use `-Format json` or
+`-Format object` to access the full dataset including entries not returned
+by the current readiness filter.
 
 ### Output (json format)
 
-`installations` is always an array.  Every version known to the
-dataset is present in the array.  Entries that were not checked appear
-with null component fields; the `readiness` value distinguishes why:
+`installations` is always an array of entries that passed the `-Readiness`
+filter.  Use `-Readiness all` to ensure all known versions are present.
+
+Entries that were not checked appear with null component fields; the
+`readiness` value distinguishes why:
 
 - `notFound` -- registry was checked; `registryFound` is `false`
 - `notApplicable` -- no check was performed; `registryFound` is `null`
 
-Use `-Format json` to inspect which versions are `notApplicable` for
-the requested platform or build system combination.
+Use `-Readiness all -Format json` to inspect all versions including those
+that are `notApplicable` for the requested platform or build system.
 
     {
       "ok": true,
@@ -480,7 +537,16 @@ a description of the `DCC` and `MSBuild` readiness criteria.
     pwsh delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win32 -BuildSystem DCC
     pwsh delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win64 -BuildSystem MSBuild -Format json
 
-### Output (text format, default)
+### Output (object format, default)
+
+Returns zero or one object.  If a ready installation is found, the
+readiness result object is emitted directly.  If no ready installation
+exists, nothing is emitted and exit code 6 is returned.
+
+    $latest = .\tool.ps1 -DetectLatest
+    if ($null -eq $latest) { Write-Error 'No Delphi found' }
+
+### Output (text format)
 
 When a ready installation is found, one block is emitted.  DCC example:
 
@@ -566,11 +632,17 @@ Controls output format.
 
 Valid values:
 
--   `text` (default)
--   `json`
+-   `object` (default) -- emits PowerShell objects to the pipeline.
+    Assign directly or pipe to other commands.  No text formatting is
+    applied.  Best for scripting and automation within PowerShell.
+-   `text` -- human-readable formatted output, one record per line or
+    block.  Labels are left-padded to a fixed column width.
+-   `json` -- machine envelope with `ok`/`command`/`tool`/`result`
+    structure.  Suitable for CI pipelines and non-PowerShell consumers.
 
 Examples:
 
+    -Format object
     -Format text
     -Format json
 
@@ -608,7 +680,9 @@ the versions present in that file.
 -   `-DetectLatest` accepts `-Platform` and `-BuildSystem` as optional
     parameters with defaults (`Win32` and `MSBuild` respectively);
     neither may be supplied positionally.
--   `-Format` applies to all actions.
+-   `-Format` applies to all actions.  Default is `object`.
+-   `-Readiness` applies to `-ListInstalled` only.  Default is
+    `@('ready')`.  Use `all` to bypass filtering.
 -   Parameter binding errors are handled by PowerShell (exit code 1).
 
 ------------------------------------------------------------------------
@@ -636,9 +710,12 @@ invalid-argument conditions detected inside the script body.
 
 # Error Behavior
 
-## Text format (default)
+## Object format (default, -Format object) and Text format (-Format text)
 
--   On success: stdout contains output, stderr is empty.
+Object mode follows the same error behavior as text mode: errors are
+written to stderr, nothing is written to stdout on error.
+
+-   On success: objects (or text lines) go to stdout, stderr is empty.
 -   On parameter binding errors (exit 1): PowerShell emits its own
     error text to stderr before the script body runs (unknown parameters,
     missing mandatory parameters, conflicting parameter sets),
@@ -653,9 +730,11 @@ invalid-argument conditions detected inside the script body.
     stdout is empty.
 -   On registry access error (exit 5): stderr contains the error
     message, stdout is empty.
--   On no installations found (exit 6): stdout contains
+-   On no installations found (exit 6): in text mode, stdout contains
     "No installations found" (for `-ListInstalled`) or
     "No ready installation found" (for `-DetectLatest`), stderr is empty.
+    In object mode, nothing is emitted to the pipeline; exit code 6 is
+    the signal.
 
 ## JSON format (-Format json)
 

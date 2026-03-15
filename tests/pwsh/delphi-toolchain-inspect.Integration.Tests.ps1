@@ -177,7 +177,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
     BeforeAll {
       $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                       -Arguments @('-DataFile', $script:fixturePath)
+                                       -Arguments @('-Format', 'text', '-DataFile', $script:fixturePath)
     }
 
     It 'exits with code 0' {
@@ -215,7 +215,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
     BeforeAll {
       $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                       -Arguments @('-Version', '-DataFile', $script:fixturePath)
+                                       -Arguments @('-Version', '-Format', 'text', '-DataFile', $script:fixturePath)
     }
 
     It 'exits with code 0' {
@@ -297,7 +297,8 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
   Context 'Given no -DataFile and the submodule is initialized' {
 
     BeforeAll {
-      $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath
+      $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
+                                       -Arguments @('-Format', 'text')
     }
 
     It 'exits with code 0' {
@@ -318,7 +319,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
     BeforeAll {
       $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                       -Arguments @('-Resolve', '-Name', 'VER150', '-DataFile', $script:resolveFixturePath)
+                                       -Arguments @('-Resolve', '-Name', 'VER150', '-Format', 'text', '-DataFile', $script:resolveFixturePath)
     }
 
     It 'exits with code 0' {
@@ -351,7 +352,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
     BeforeAll {
       $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                       -Arguments @('-Resolve', '-Name', 'D7', '-DataFile', $script:resolveFixturePath)
+                                       -Arguments @('-Resolve', '-Name', 'D7', '-Format', 'text', '-DataFile', $script:resolveFixturePath)
     }
 
     It 'exits with code 0' {
@@ -368,7 +369,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
     BeforeAll {
       $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                       -Arguments @('-Resolve', 'D7', '-DataFile', $script:resolveFixturePath)
+                                       -Arguments @('-Resolve', 'D7', '-Format', 'text', '-DataFile', $script:resolveFixturePath)
     }
 
     It 'exits with code 0' {
@@ -385,7 +386,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
     BeforeAll {
       $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                       -Arguments @('-Resolve', '-Name', 'ver150', '-DataFile', $script:resolveFixturePath)
+                                       -Arguments @('-Resolve', '-Name', 'ver150', '-Format', 'text', '-DataFile', $script:resolveFixturePath)
     }
 
     It 'exits with code 0' {
@@ -468,7 +469,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
     BeforeAll {
       $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                       -Arguments @('-Resolve', '-Name', 'VER370', '-DataFile', $script:resolveFixturePath)
+                                       -Arguments @('-Resolve', '-Name', 'VER370', '-Format', 'text', '-DataFile', $script:resolveFixturePath)
     }
 
     It 'exits with code 0' {
@@ -632,7 +633,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
     BeforeAll {
       $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                       -Arguments @('-ListKnown', '-DataFile', $script:resolveFixturePath)
+                                       -Arguments @('-ListKnown', '-Format', 'text', '-DataFile', $script:resolveFixturePath)
     }
 
     It 'exits with code 0' {
@@ -688,7 +689,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
     BeforeAll {
       $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                       -Arguments @('-ListInstalled', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-DataFile', $script:listInstalledFixturePath)
+                                       -Arguments @('-ListInstalled', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-Format', 'text', '-DataFile', $script:listInstalledFixturePath)
     }
 
     It 'exits with code 6 (no installations found)' {
@@ -710,16 +711,16 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
   }
 
-  Context 'Given -ListInstalled -Platform Win32 -BuildSystem DCC -Format json' {
+  Context 'Given -ListInstalled -Platform Win32 -BuildSystem DCC -Format json -Readiness all' {
 
     BeforeAll {
       $script:run  = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                        -Arguments @('-ListInstalled', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-Format', 'json', '-DataFile', $script:listInstalledFixturePath)
+                                        -Arguments @('-ListInstalled', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-Format', 'json', '-Readiness', 'all', '-DataFile', $script:listInstalledFixturePath)
       $script:json = ($script:run.StdOut -join "`n") | ConvertFrom-Json
     }
 
-    It 'exits with code 6' {
-      $script:run.ExitCode | Should -Be 6
+    It 'exits with code 0 (entries returned when readiness all)' {
+      $script:run.ExitCode | Should -Be 0
     }
 
     It 'stdout parses as valid JSON' {
@@ -764,16 +765,16 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
   }
 
-  Context 'Given -ListInstalled -Platform Win32 -BuildSystem MSBuild -Format json' {
+  Context 'Given -ListInstalled -Platform Win32 -BuildSystem MSBuild -Format json -Readiness all' {
 
     BeforeAll {
       $script:run  = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                        -Arguments @('-ListInstalled', '-Platform', 'Win32', '-BuildSystem', 'MSBuild', '-Format', 'json', '-DataFile', $script:listInstalledFixturePath)
+                                        -Arguments @('-ListInstalled', '-Platform', 'Win32', '-BuildSystem', 'MSBuild', '-Format', 'json', '-Readiness', 'all', '-DataFile', $script:listInstalledFixturePath)
       $script:json = ($script:run.StdOut -join "`n") | ConvertFrom-Json
     }
 
-    It 'exits with code 6' {
-      $script:run.ExitCode | Should -Be 6
+    It 'exits with code 0 (entries returned when readiness all)' {
+      $script:run.ExitCode | Should -Be 0
     }
 
     It 'stdout parses as valid JSON' {
@@ -883,7 +884,7 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
     BeforeAll {
       $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
-                                       -Arguments @('-DetectLatest', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-DataFile', $script:listInstalledFixturePath)
+                                       -Arguments @('-DetectLatest', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-Format', 'text', '-DataFile', $script:listInstalledFixturePath)
     }
 
     It 'exits with code 6 (no ready installation found)' {
@@ -1047,6 +1048,181 @@ Describe 'delphi-toolchain-inspect.ps1 (subprocess)' {
 
     It 'produces no stderr' {
       $script:run.StdErr | Should -BeNullOrEmpty
+    }
+
+  }
+
+  # ---- Object format (default) integration tests ----
+
+  # Object mode integration tests verify exit code and clean stderr only.
+  # When invoked via pwsh -File, objects emitted by Write-Output are not
+  # rendered to stdout (no Out-Default consumer in -File mode).  Property
+  # assertions belong in unit tests.
+
+  Context 'Given -Version default format (object) and a valid -DataFile' {
+
+    BeforeAll {
+      $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
+                                       -Arguments @('-Version', '-DataFile', $script:fixturePath)
+    }
+
+    It 'exits with code 0' {
+      $script:run.ExitCode | Should -Be 0
+    }
+
+    It 'produces no stderr' {
+      $script:run.StdErr | Should -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Given -Resolve default format (object) and name found' {
+
+    BeforeAll {
+      $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
+                                       -Arguments @('-Resolve', 'D7', '-DataFile', $script:resolveFixturePath)
+    }
+
+    It 'exits with code 0' {
+      $script:run.ExitCode | Should -Be 0
+    }
+
+    It 'produces no stderr' {
+      $script:run.StdErr | Should -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Given -Resolve default format (object) and name not found' {
+
+    BeforeAll {
+      $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
+                                       -Arguments @('-Resolve', 'DelphiX', '-DataFile', $script:resolveFixturePath)
+    }
+
+    It 'exits with code 4' {
+      $script:run.ExitCode | Should -Be 4
+    }
+
+    It 'stdout is empty' {
+      $script:run.StdOut | Should -BeNullOrEmpty
+    }
+
+    It 'stderr is non-empty' {
+      $script:run.StdErr | Should -Not -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Given -ListKnown default format (object) and a valid -DataFile' {
+
+    BeforeAll {
+      $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
+                                       -Arguments @('-ListKnown', '-DataFile', $script:resolveFixturePath)
+    }
+
+    It 'exits with code 0' {
+      $script:run.ExitCode | Should -Be 0
+    }
+
+    It 'produces no stderr' {
+      $script:run.StdErr | Should -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Given -ListInstalled default format (object) and -Readiness all' {
+
+    BeforeAll {
+      $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
+                                       -Arguments @('-ListInstalled', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-Readiness', 'all', '-DataFile', $script:listInstalledFixturePath)
+    }
+
+    It 'exits with code 0' {
+      $script:run.ExitCode | Should -Be 0
+    }
+
+    It 'produces no stderr' {
+      $script:run.StdErr | Should -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Given -ListInstalled default format (object) and default -Readiness (ready only)' {
+
+    BeforeAll {
+      $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
+                                       -Arguments @('-ListInstalled', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-DataFile', $script:listInstalledFixturePath)
+    }
+
+    It 'exits with code 6 (no ready installations on test machine)' {
+      $script:run.ExitCode | Should -Be 6
+    }
+
+    It 'produces no stderr' {
+      $script:run.StdErr | Should -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Given -DetectLatest default format (object) and no ready installations' {
+
+    BeforeAll {
+      $script:run = Invoke-ToolProcess -ScriptPath $script:scriptPath `
+                                       -Arguments @('-DetectLatest', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-DataFile', $script:listInstalledFixturePath)
+    }
+
+    It 'exits with code 6' {
+      $script:run.ExitCode | Should -Be 6
+    }
+
+    It 'produces no stderr' {
+      $script:run.StdErr | Should -BeNullOrEmpty
+    }
+
+  }
+
+  # ---- -Readiness filter integration tests ----
+
+  Context 'Given -ListInstalled -Readiness all -Format json returns all fixture entries' {
+
+    BeforeAll {
+      $script:run  = Invoke-ToolProcess -ScriptPath $script:scriptPath `
+                                        -Arguments @('-ListInstalled', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-Readiness', 'all', '-Format', 'json', '-DataFile', $script:listInstalledFixturePath)
+      $script:json = ($script:run.StdOut -join "`n") | ConvertFrom-Json
+    }
+
+    It 'exits with code 0' {
+      $script:run.ExitCode | Should -Be 0
+    }
+
+    It 'result.installations has all fixture entries' {
+      $script:json.result.installations | Should -HaveCount $script:listInstalledFixtureVersionCount
+    }
+
+  }
+
+  Context 'Given -ListInstalled -Readiness notApplicable -Format json' {
+
+    BeforeAll {
+      $script:run  = Invoke-ToolProcess -ScriptPath $script:scriptPath `
+                                        -Arguments @('-ListInstalled', '-Platform', 'Win32', '-BuildSystem', 'DCC', '-Readiness', 'notApplicable', '-Format', 'json', '-DataFile', $script:listInstalledFixturePath)
+      $script:json = ($script:run.StdOut -join "`n") | ConvertFrom-Json
+    }
+
+    It 'exits with code 0 (notApplicable entries found)' {
+      $script:run.ExitCode | Should -Be 0
+    }
+
+    It 'stdout parses as valid JSON' {
+      { ($script:run.StdOut -join "`n") | ConvertFrom-Json } | Should -Not -Throw
+    }
+
+    It 'all returned installations have readiness notApplicable' {
+      $installs = @($script:json.result.installations)
+      foreach ($inst in $installs) {
+        $inst.readiness | Should -Be 'notApplicable'
+      }
     }
 
   }

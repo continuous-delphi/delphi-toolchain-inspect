@@ -72,7 +72,8 @@ Describe 'Write-DetectLatestOutput' {
       $script:out = Write-DetectLatestOutput `
         -Installation $null `
         -Platform 'Win32' -BuildSystem 'DCC' `
-        -ToolVersion $script:toolVersion
+        -ToolVersion $script:toolVersion `
+        -Format 'text'
     }
 
     It 'emits exactly one line' {
@@ -91,7 +92,8 @@ Describe 'Write-DetectLatestOutput' {
       $script:out = Write-DetectLatestOutput `
         -Installation $script:readyDcc `
         -Platform 'Win32' -BuildSystem 'DCC' `
-        -ToolVersion $script:toolVersion
+        -ToolVersion $script:toolVersion `
+        -Format 'text'
     }
 
     It 'first line contains verDefine and productName' {
@@ -138,7 +140,8 @@ Describe 'Write-DetectLatestOutput' {
       $script:out = Write-DetectLatestOutput `
         -Installation $script:readyMSBuild `
         -Platform 'Win32' -BuildSystem 'MSBuild' `
-        -ToolVersion $script:toolVersion
+        -ToolVersion $script:toolVersion `
+        -Format 'text'
     }
 
     It 'first line contains verDefine and productName' {
@@ -283,6 +286,45 @@ Describe 'Write-DetectLatestOutput' {
 
     It 'result.installation.envOptionsHasLibraryPath is true' {
       $script:json.result.installation.envOptionsHasLibraryPath | Should -Be $true
+    }
+
+  }
+
+  Context 'Object format (default), installation found' {
+
+    BeforeAll {
+      $script:objOut = Write-DetectLatestOutput `
+        -Installation $script:readyDcc `
+        -Platform 'Win32' -BuildSystem 'DCC' `
+        -ToolVersion $script:toolVersion
+    }
+
+    It 'emits the installation object' {
+      $script:objOut | Should -Not -BeNullOrEmpty
+    }
+
+    It 'emitted object verDefine is VER370' {
+      $script:objOut.verDefine | Should -Be 'VER370'
+    }
+
+    It 'emitted object readiness is ready' {
+      $script:objOut.readiness | Should -Be 'ready'
+    }
+
+  }
+
+  Context 'Object format (default), no installation found' {
+
+    BeforeAll {
+      $script:objOut = Write-DetectLatestOutput `
+        -Installation $null `
+        -Platform 'Win32' -BuildSystem 'DCC' `
+        -ToolVersion $script:toolVersion
+    }
+
+    It 'emits nothing (empty pipeline)' {
+      # Wrap in @() to handle null vs empty array under StrictMode
+      @($script:objOut) | Should -HaveCount 0
     }
 
   }

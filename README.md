@@ -23,17 +23,29 @@ first-class deliverables.
 ## TLDR;
 
 ```powershell
+# Object mode (default) -- returns PowerShell objects; pipe, filter, or assign directly
+$ver  = pwsh delphi-toolchain-inspect.ps1 -Version
+$d7   = pwsh delphi-toolchain-inspect.ps1 -Resolve D7
+$all  = pwsh delphi-toolchain-inspect.ps1 -ListKnown
+$inst = pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all
+$best = pwsh delphi-toolchain-inspect.ps1 -DetectLatest
+
+# Text format -- human-readable output
 pwsh delphi-toolchain-inspect.ps1
-pwsh delphi-toolchain-inspect.ps1 -Version
-pwsh delphi-toolchain-inspect.ps1 -Resolve D7
-pwsh delphi-toolchain-inspect.ps1 -Resolve -Name D7
-pwsh delphi-toolchain-inspect.ps1 -Resolve "Delphi 11"
+pwsh delphi-toolchain-inspect.ps1 -Version -Format text
+pwsh delphi-toolchain-inspect.ps1 -Resolve D7 -Format text
+pwsh delphi-toolchain-inspect.ps1 -Resolve -Name D7 -Format text
+pwsh delphi-toolchain-inspect.ps1 -Resolve "Delphi 11" -Format text
+pwsh delphi-toolchain-inspect.ps1 -ListKnown -Format text
+pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Format text
+pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC -Readiness all -Format text
+pwsh delphi-toolchain-inspect.ps1 -DetectLatest -Format text
+pwsh delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win64 -BuildSystem DCC -Format text
+
+# JSON format -- machine envelope for CI pipelines
 pwsh delphi-toolchain-inspect.ps1 -Resolve D7 -Format json
-pwsh delphi-toolchain-inspect.ps1 -ListKnown
 pwsh delphi-toolchain-inspect.ps1 -ListKnown -Format json
-pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem DCC
-pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem MSBuild -Format json
-pwsh delphi-toolchain-inspect.ps1 -DetectLatest
+pwsh delphi-toolchain-inspect.ps1 -ListInstalled -Platform Win32 -BuildSystem MSBuild -Readiness all -Format json
 pwsh delphi-toolchain-inspect.ps1 -DetectLatest -Platform Win64 -BuildSystem DCC -Format json
 ```
 
@@ -128,6 +140,27 @@ ensure identical parameter syntax.
 
 See [docs/commands.md](docs/commands.md) for full command reference including switches,
 output formats, exit codes, and any functionality differences between implementations.
+
+### Output formats
+
+`-Format` controls the output mode.  Valid values:
+
+- `object` (default) -- emits PowerShell objects to the pipeline.  Pipe,
+  filter, or assign directly.  No text formatting is applied.
+- `text` -- human-readable formatted output, one record per line or block.
+- `json` -- machine envelope with `ok`/`command`/`tool`/`result` structure.
+  Suitable for CI pipelines and non-PowerShell consumers.
+
+### -Readiness filter (-ListInstalled only)
+
+`-Readiness` controls which readiness states are included in `-ListInstalled`
+output.  Applies to all formats.  Default is `@('ready')`.
+
+Valid values: `ready`, `partialInstall`, `notFound`, `notApplicable`, `all`.
+
+The special value `all` bypasses filtering entirely and returns every entry.
+Use `-Readiness all` to restore the previous behavior of returning all entries
+regardless of state (prior releases always returned all entries for `-Format json`).
 
 ### Machine output contract
 

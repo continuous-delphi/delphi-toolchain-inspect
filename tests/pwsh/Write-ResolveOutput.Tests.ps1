@@ -53,7 +53,7 @@ Describe 'Write-ResolveOutput' {
         regKeyRelativePath = '\Software\Embarcadero\BDS\37.0'
         aliases            = @('VER370', 'Delphi13', 'Delphi 13 Florence', 'D13')
       }
-      $script:output = Write-ResolveOutput -Entry $script:entry
+      $script:output = Write-ResolveOutput -Entry $script:entry -Format 'text'
     }
 
     It 'output includes a line with the verDefine value' {
@@ -97,7 +97,7 @@ Describe 'Write-ResolveOutput' {
         regKeyRelativePath = '\Software\Borland\Delphi\7.0'
         aliases            = @('VER150', 'Delphi7', 'D7')
       }
-      $script:output = Write-ResolveOutput -Entry $script:entry
+      $script:output = Write-ResolveOutput -Entry $script:entry -Format 'text'
     }
 
     It 'output has exactly six lines' {
@@ -117,7 +117,7 @@ Describe 'Write-ResolveOutput' {
         regKeyRelativePath = '\Software\Borland\Delphi\7.0'
         aliases            = @('VER150', 'Delphi7', 'D7')
       }
-      $script:output = Write-ResolveOutput -Entry $script:entry
+      $script:output = Write-ResolveOutput -Entry $script:entry -Format 'text'
     }
 
     It 'aliases line contains all aliases comma-separated' {
@@ -192,6 +192,50 @@ Describe 'Write-ResolveOutput' {
 
     It 'result does not contain a bds_reg_version property' {
       $script:json.result.PSObject.Properties['bds_reg_version'] | Should -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Given object format (default) and VER370 entry' {
+
+    BeforeAll {
+      $script:entry = [pscustomobject]@{
+        verDefine          = 'VER370'
+        productName        = 'Delphi 13 Florence'
+        compilerVersion    = '37.0'
+        packageVersion     = '370'
+        regKeyRelativePath = '\Software\Embarcadero\BDS\37.0'
+        aliases            = @('VER370', 'Delphi13', 'Delphi 13 Florence', 'D13')
+      }
+      $script:output = Write-ResolveOutput -Entry $script:entry
+    }
+
+    It 'emits one pscustomobject' {
+      $script:output | Should -HaveCount 1
+    }
+
+    It 'has verDefine property with correct value' {
+      $script:output.verDefine | Should -Be 'VER370'
+    }
+
+    It 'has productName property with correct value' {
+      $script:output.productName | Should -Be 'Delphi 13 Florence'
+    }
+
+    It 'has compilerVersion property with correct value' {
+      $script:output.compilerVersion | Should -Be '37.0'
+    }
+
+    It 'has packageVersion property with correct value' {
+      $script:output.packageVersion | Should -Be '370'
+    }
+
+    It 'has regKeyRelativePath property with correct value' {
+      $script:output.regKeyRelativePath | Should -Be '\Software\Embarcadero\BDS\37.0'
+    }
+
+    It 'has aliases property with all four entries' {
+      $script:output.aliases | Should -HaveCount 4
     }
 
   }

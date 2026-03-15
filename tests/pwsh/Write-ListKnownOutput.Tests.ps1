@@ -61,7 +61,7 @@ Describe 'Write-ListKnownOutput' {
   Context 'Given text format with all fields populated' {
 
     BeforeAll {
-      $script:output = Write-ListKnownOutput -Data $script:data -ToolVersion '0.1.0'
+      $script:output = Write-ListKnownOutput -Data $script:data -ToolVersion '0.1.0' -Format 'text'
     }
 
     It 'output includes an entry line for VER150' {
@@ -139,6 +139,38 @@ Describe 'Write-ListKnownOutput' {
 
     It 'first entry notes is present' {
       $script:json.result.versions[0].PSObject.Properties['notes'] | Should -Not -BeNullOrEmpty
+    }
+
+  }
+
+  Context 'Given object format (default) with all fields populated' {
+
+    BeforeAll {
+      $script:output = @(Write-ListKnownOutput -Data $script:data -ToolVersion '0.1.0')
+    }
+
+    It 'emits one object per fixture entry' {
+      $script:output | Should -HaveCount 2
+    }
+
+    It 'each emitted object has a verDefine property' {
+      foreach ($obj in $script:output) {
+        $obj.PSObject.Properties['verDefine'] | Should -Not -BeNullOrEmpty
+      }
+    }
+
+    It 'each emitted object has a productName property' {
+      foreach ($obj in $script:output) {
+        $obj.PSObject.Properties['productName'] | Should -Not -BeNullOrEmpty
+      }
+    }
+
+    It 'first object verDefine is VER150' {
+      $script:output[0].verDefine | Should -Be 'VER150'
+    }
+
+    It 'second object verDefine is VER370' {
+      $script:output[1].verDefine | Should -Be 'VER370'
     }
 
   }

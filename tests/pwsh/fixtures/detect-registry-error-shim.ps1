@@ -9,8 +9,8 @@
 param(
   [string]$DataFile,
 
-  [ValidateSet('text', 'json')]
-  [string]$Format = 'text',
+  [ValidateSet('text', 'json', 'object')]
+  [string]$Format = 'object',
 
   [ValidateSet('Win32', 'Win64')]
   [string]$Platform = 'Win32',
